@@ -10,21 +10,13 @@ const role = computed(() => authStore.currentUser?.role.trim().toLowerCase());
 const mainContentCards = computed(() => {
   switch (role.value) {
     case "alumno":
-      return [
-        { title: "Alumno", text: "Eres alumno" }
-      ];
+      return [{ title: "Alumno", text: "Eres alumno" }];
     case "tutor_empresa":
-      return [
-        { title: "Tutor Empresa", text: "Eres tutor de empresa" }
-      ];
+      return [{ title: "Tutor Empresa", text: "Eres tutor de empresa" }];
     case "tutor_egibide":
-      return [
-        { title: "Tutor Egibide", text: "Eres tutor de Egibide" }
-      ];
+      return [{ title: "Tutor Egibide", text: "Eres tutor de Egibide" }];
     case "admin":
-      return [
-        { title: "Admin", text: "Eres administrador" }
-      ];
+      return [{ title: "Admin", text: "Eres administrador" }];
     default:
       return [];
   }
@@ -32,11 +24,17 @@ const mainContentCards = computed(() => {
 </script>
 
 <template>
-  <main class="flex-grow-1 p-4 bg-light overflow-auto rounded shadow-sm bg-white">
+  <main
+    class="flex-grow-1 p-4 bg-light overflow-auto rounded shadow-sm bg-light"
+  >
     <h1 class="mb-4">Panel principal</h1>
 
     <div class="row g-3">
-      <div v-for="(card, index) in mainContentCards" :key="index" class="col-md-4">
+      <div
+        v-for="(card, index) in mainContentCards"
+        :key="index"
+        class="col-md-4"
+      >
         <div class="card shadow-sm">
           <div class="card-body">
             <h5 class="card-title">{{ card.title }}</h5>
@@ -45,8 +43,8 @@ const mainContentCards = computed(() => {
         </div>
       </div>
     </div>
+    <RouterView name="main"></RouterView>
   </main>
 </template>
-
 
 <style scoped></style>

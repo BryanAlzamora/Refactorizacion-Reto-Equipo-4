@@ -1,0 +1,28 @@
+// COLORES
+$body-bg: #e3e6ea;
+
+$primary: #80015e;
+
+$bg-light: #eaebef;
+
+// COMPONENTES
+$card-bg: #eaebef;
+$input-bg: #eaebef;
+$dropdown-bg: #eaebef;
+$modal-content-bg: #eaebef;
+$table-bg: #eaebef;
+
+// BOTONES
+:root {
+  --bs-btn-active-border-color: transparent;
+}
+
+.btn {
+  &:focus,
+  &:focus-visible,
+  &.active,
+  &.show,
+  &:active {
+    box-shadow: none;
+  }
+}

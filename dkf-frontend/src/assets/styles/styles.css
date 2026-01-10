@@ -88,8 +88,8 @@
   --bs-body-line-height: 1.5;
   --bs-body-color: #212529;
   --bs-body-color-rgb: 33, 37, 41;
-  --bs-body-bg: #f4f6f9;
-  --bs-body-bg-rgb: 244, 246, 249;
+  --bs-body-bg: #e3e6ea;
+  --bs-body-bg-rgb: 227, 230, 234;
   --bs-emphasis-color: #000;
   --bs-emphasis-color-rgb: 0, 0, 0;
   --bs-secondary-color: rgba(33, 37, 41, 0.75);
@@ -1866,7 +1866,7 @@ progress {
   --bs-table-color-state: initial;
   --bs-table-bg-state: initial;
   --bs-table-color: var(--bs-emphasis-color);
-  --bs-table-bg: #ffffff;
+  --bs-table-bg: #eaebef;
   --bs-table-border-color: var(--bs-border-color);
   --bs-table-accent-bg: transparent;
   --bs-table-striped-color: var(--bs-emphasis-color);
@@ -2126,7 +2126,7 @@ progress {
   line-height: 1.5;
   color: var(--bs-body-color);
   appearance: none;
-  background-color: #ffffff;
+  background-color: #eaebef;
   background-clip: padding-box;
   border: var(--bs-border-width) solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);
@@ -2145,7 +2145,7 @@ progress {
 }
 .form-control:focus {
   color: var(--bs-body-color);
-  background-color: #ffffff;
+  background-color: #eaebef;
   border-color: rgb(191.5, 128, 174.5);
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(128, 1, 94, 0.25);
@@ -2276,7 +2276,7 @@ textarea.form-control-lg {
   line-height: 1.5;
   color: var(--bs-body-color);
   appearance: none;
-  background-color: #ffffff;
+  background-color: #eaebef;
   background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
@@ -2350,7 +2350,7 @@ textarea.form-control-lg {
 }
 
 .form-check-input {
-  --bs-form-check-bg: #ffffff;
+  --bs-form-check-bg: #eaebef;
   flex-shrink: 0;
   width: 1em;
   height: 1em;
@@ -2468,10 +2468,10 @@ textarea.form-control-lg {
   outline: 0;
 }
 .form-range:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 1px #f4f6f9, 0 0 0 0.25rem rgba(128, 1, 94, 0.25);
+  box-shadow: 0 0 0 1px #e3e6ea, 0 0 0 0.25rem rgba(128, 1, 94, 0.25);
 }
 .form-range:focus::-moz-range-thumb {
-  box-shadow: 0 0 0 1px #f4f6f9, 0 0 0 0.25rem rgba(128, 1, 94, 0.25);
+  box-shadow: 0 0 0 1px #e3e6ea, 0 0 0 0.25rem rgba(128, 1, 94, 0.25);
 }
 .form-range::-moz-focus-outer {
   border: 0;
@@ -2612,7 +2612,7 @@ textarea.form-control-lg {
   z-index: -1;
   height: 1.5em;
   content: "";
-  background-color: #ffffff;
+  background-color: #eaebef;
   border-radius: var(--bs-border-radius);
 }
 .form-floating > textarea:disabled ~ label::after {
@@ -3355,7 +3355,7 @@ textarea.form-control-lg {
   --bs-dropdown-spacer: 0.125rem;
   --bs-dropdown-font-size: 1rem;
   --bs-dropdown-color: var(--bs-body-color);
-  --bs-dropdown-bg: #ffffff;
+  --bs-dropdown-bg: #eaebef;
   --bs-dropdown-border-color: var(--bs-border-color-translucent);
   --bs-dropdown-border-radius: var(--bs-border-radius);
   --bs-dropdown-border-width: var(--bs-border-width);
@@ -4318,7 +4318,7 @@ textarea.form-control-lg {
   --bs-card-cap-color: ;
   --bs-card-height: ;
   --bs-card-color: ;
-  --bs-card-bg: #ffffff;
+  --bs-card-bg: #eaebef;
   --bs-card-img-overlay-padding: 1rem;
   --bs-card-group-margin: 0.75rem;
   position: relative;
@@ -5399,7 +5399,7 @@ textarea.form-control-lg {
   --bs-modal-padding: 1rem;
   --bs-modal-margin: 0.5rem;
   --bs-modal-color: var(--bs-body-color);
-  --bs-modal-bg: #ffffff;
+  --bs-modal-bg: #eaebef;
   --bs-modal-border-color: var(--bs-border-color-translucent);
   --bs-modal-border-width: var(--bs-border-width);
   --bs-modal-border-radius: var(--bs-border-radius-lg);
@@ -11866,6 +11866,54 @@ textarea.form-control-lg {
   .d-print-none {
     display: none !important;
   }
+}
+.sidebar {
+  width: 250px;
+  height: 100%;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5em 1em;
+}
+
+.sidebar-section {
+  padding: 0;
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: inherit;
+  padding: 4px 0;
+  cursor: pointer;
+}
+.sidebar-title:hover {
+  background-color: #f8f9fa;
+}
+.sidebar-title.active {
+  background-color: rgb(242.3, 229.6, 238.9);
+  color: #80015e;
+  font-weight: 500;
+}
+
+.sidebar-item {
+  font-size: 1rem;
+  color: #212529;
+  padding: 2px 12px;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  margin-bottom: 4px;
+}
+.sidebar-item:hover {
+  background-color: #f8f9fa;
+}
+.sidebar-item.active {
+  background-color: rgb(242.3, 229.6, 238.9);
+  color: #80015e;
+  font-weight: 500;
 }
 
 /*# sourceMappingURL=styles.css.map */

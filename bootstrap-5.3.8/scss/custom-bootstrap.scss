@@ -1,29 +1,8 @@
-// COLORES
-$body-bg: #f4f6f9;
-
-$primary: #80015e;
-
-// COMPONENTES
-$card-bg: #ffffff;
-$input-bg: #ffffff;
-$dropdown-bg: #ffffff;
-$modal-content-bg: #ffffff;
-$table-bg: #ffffff;
-
-// BOTONES
-:root {
-  --bs-btn-active-border-color: transparent;
-}
-
-.btn {
-  &:focus,
-  &:focus-visible,
-  &.active,
-  &.show,
-  &:active {
-    box-shadow: none;
-  }
-}
+// VARIABLES CUSTOM
+@import "_custom-variables.scss";
 
 // IMPORT BOOTSTRAP
 @import "bootstrap.scss";
+
+//CUSTOM COMPONENTS
+@import "_sidebarMenu.scss";

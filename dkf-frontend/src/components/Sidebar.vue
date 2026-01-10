@@ -1,69 +1,102 @@
-<script setup lang="ts">
+<script>
 import { computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
-interface SidebarOption {
-  label: string;
-  icon?: string;
-  route?: string;
-}
+export default {
+  name: "Sidebar",
+  setup() {
+    const authStore = useAuthStore();
 
-const authStore = useAuthStore();
+    const userRole = computed(() => authStore.currentUser?.role);
 
-const optionsByRole: Record<string, SidebarOption[]> = {
-  Alumno: [
-    { label: "- Subir cuaderno" },
-    { label: "- Ver información" },
-    { label: "- Consultar notas" },
-  ],
-  TutorEmpresa: [
-    { label: "- Elegir competencias" },
-    { label: "- Evaluarlas" },
-    { label: "- Ver información personas" },
-  ],
-  TutorCentro: [
-    { label: "- Asignar horario/calendario" },
-    { label: "- Asignar empresa" },
-    { label: "- Ver información" },
-    { label: "- Seguimiento" },
-  ],
-  Admin: [
-    { label: "- Añadir ciclos/personas/empresas/competencias" },
-    { label: "- Ver todo" },
-  ],
+    return {
+      userRole,
+    };
+  },
 };
-
-const sidebarOptions = computed(() => {
-  if (!authStore.currentUser) return [];
-  const role = authStore.currentUser.role.trim().toLowerCase(); // normalizamos
-  switch (role) {
-    case "alumno":
-      return optionsByRole["Alumno"];
-    case "tutor_empresa":
-      return optionsByRole["TutorEmpresa"];
-    case "tutor_egibide":
-      return optionsByRole["TutorCentro"];
-    case "admin":
-      return optionsByRole["Admin"];
-    default:
-      return [];
-  }
-});
 </script>
 
 <template>
-  <aside class="sidebar p-3 rounded shadow-sm bg-white">
-    <ul class="nav flex-column gap-2">
-      <li v-for="(option, index) in sidebarOptions" :key="index" class="nav-item">
-        <a class="nav-link text-black" href="#">{{ option.label }}</a>
-      </li>
-    </ul>
+  <aside class="sidebar bg-light rounded shadow-sm">
+    <!-- Menú para Alumnos -->
+    <nav v-if="userRole === 'alumno'" class="sidebar-nav">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Inicio</h3>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Información</h3>
+        <ul class="list-unstyled mb-0">
+          <li class="sidebar-item">
+            <RouterLink to="/alumno/mis-datos">Mis Datos</RouterLink>
+          </li>
+          <li class="sidebar-item">
+            <RouterLink to="/alumno/empresa">Empresa</RouterLink>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Seguimiento</h3>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Calificación</h3>
+      </div>
+    </nav>
+
+    <!-- Menú para Tutores -->
+    <nav v-else-if="userRole === 'tutor'" class="sidebar-nav">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Información</h3>
+        <ul class="list-unstyled mb-0">
+          <li class="sidebar-item">Mis Alumnos</li>
+          <li class="sidebar-item">Empresas</li>
+          <li class="sidebar-item">Evaluaciones</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Seguimiento</h3>
+        <ul class="list-unstyled mb-0">
+          <li class="sidebar-item">Estado General</li>
+          <li class="sidebar-item">Incidencias</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Reportes</h3>
+      </div>
+    </nav>
+
+    <!-- Menú para Empresas -->
+    <nav v-else-if="userRole === 'empresa'" class="sidebar-nav">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Mi Empresa</h3>
+        <ul class="list-unstyled mb-0">
+          <li class="sidebar-item">Datos</li>
+          <li class="sidebar-item">Alumnos Asignados</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Evaluación</h3>
+        <ul class="list-unstyled mb-0">
+          <li class="sidebar-item">Competencias</li>
+          <li class="sidebar-item">Seguimiento</li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Menú por defecto -->
+    <nav v-else class="sidebar-nav">
+      <div class="sidebar-section">
+        <p class="text-muted text-center py-4 mb-0">
+          No se ha identificado el tipo de usuario
+        </p>
+      </div>
+    </nav>
   </aside>
 </template>
 
-<style scoped>
-.sidebar {
-  width: 280px;
-  min-width: 240px;
-}
-</style>
+<style scoped></style>
