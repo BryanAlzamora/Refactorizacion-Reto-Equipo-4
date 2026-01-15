@@ -1,4 +1,5 @@
 export interface Competencia {
-  id: number,
+  id: number
   descripcion: string
+  tipo: 'TECNICA' | 'TRANSVERSAL'
 }
