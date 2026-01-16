@@ -40,10 +40,6 @@ export const useEmpresasStore = defineStore("empresas", () => {
   }
 
   async function fetchMiEmpresa() {
-    loading.value = true;
-    error.value = null;
-
-    try {
       const response = await fetch("http://localhost:8000/api/me/empresa", {
         headers: authStore.token
           ? {
@@ -54,22 +50,16 @@ export const useEmpresasStore = defineStore("empresas", () => {
               Accept: "application/json",
             },
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Error al cargar empresa");
-      }
-
       const data = await response.json();
-
+      if (!response.ok) {
+        setMessage(
+          data.message || "Error desconocido, inténtalo más tarde",
+          "error",
+        );
+        return false;
+      }
       empresas.value = Array.isArray(data) ? (data as Empresa[]) : ([data] as Empresa[]);
-    } catch (err: any) {
-      error.value = err.message ?? "Error desconocido";
-      empresas.value = [];
-    } finally {
-      loading.value = false;
     }
-  }
 
   async function createEmpresa(
     nombre: string,

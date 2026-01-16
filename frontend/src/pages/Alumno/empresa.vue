@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useEmpresasStore } from '@/stores/empresas'
+import Toast from '@/components/Notification/Toast.vue'
 
 const empresasStore = useEmpresasStore()
 
@@ -14,12 +15,12 @@ const miEmpresa = computed(() => empresasStore.empresas?.[0] ?? null)
 <template>
   <div class="container mt-4">
     <h2 class="mb-4">Datos de la Empresa</h2>
-
-    <div v-if="empresasStore.loading" class="text-muted">Cargando...</div>
-
-    <div v-else-if="empresasStore.error" class="alert alert-danger">
-      {{ empresasStore.error }}
-    </div>
+    
+    <Toast
+    v-if="empresasStore.message"
+    :message="empresasStore.message"
+    :messageType="empresasStore.messageType"
+    />
 
     <div v-else-if="miEmpresa" class="card">
       <div class="card-body">

@@ -1,9 +1,11 @@
 import type { Alumno } from "@/interfaces/Alumno"
 import { defineStore } from "pinia"
 import { useAuthStore } from "./auth";
+import { ref } from "vue";
 
 export const useAlumnosStore = defineStore("alumnos", () => {
   const alumnos = ref<Alumno[]>([]);
+  const alumno = ref<Alumno[]>([]);
   const authStore = useAuthStore();
 
   const message = ref<string | null>(null);
@@ -28,34 +30,32 @@ export const useAlumnosStore = defineStore("alumnos", () => {
       },
     });
 
-      this.loading = true
-      this.error = null
+    const data = await response.json();
+    alumnos.value = data as Alumno[];
+  }
 
-      try {
-        const response = await fetch("http://localhost:8000/api/me/alumno", {
-          method: "GET",
-          headers: {
-            Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
-            Accept: "application/json",
-          },
-        })
+  async function fetchAlumno() {
+    const response = await fetch("http://localhost:8000/api/me/alumno", {
+      method: "GET",
+      headers: {
+        Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+        Accept: "application/json",
+      },
+    });
 
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({}))
-          throw { status: response.status, data: err }
-        }
+    const data = await response.json();
 
-        const data: Alumno = await response.json()
-        this.Alumno = data
-      } catch (e: any) {
-        this.Alumno = null
-        this.error = e?.data?.message ?? "Error al cargar alumno"
-      } finally {
-        this.loading = false
-      }
-    },
-  },
-})
+    if (!response.ok) {
+      setMessage(
+          data.message || "Error desconocido, inténtalo más tarde",
+          "error",
+        );
+      return false;
+    }
+    
+    alumno.value = Array.isArray(data) ? (data as Alumno[]) : ([data] as Alumno[]);
+  }
+
   async function createAlumno(
     nombre: string,
     apellidos: string,
@@ -86,5 +86,5 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     return true;
   }
 
-  return { alumnos, message, messageType, fetchAlumnos, createAlumno };
+  return { alumnos, alumno, message, messageType, fetchAlumnos, fetchAlumno, createAlumno };
 });
