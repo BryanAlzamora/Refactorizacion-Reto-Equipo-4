@@ -26,7 +26,7 @@ class CiclosController extends Controller {
     public function store(Request $request) {
         $validated = $request->validate([
             'nombre' => ['required'],
-            'id_familia' => ['required']
+            'familia_profesional_id' => ['required']
         ]);
 
         Ciclos::create($validated);

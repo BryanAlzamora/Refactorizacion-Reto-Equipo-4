@@ -26,7 +26,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
     ciclos.value = data as Ciclo[];
   }
 
-  async function createCiclo(nombre: string, id_familia: number) {
+  async function createCiclo(nombre: string, familia_profesional_id: number) {
     const response = await fetch("http://localhost:8000/api/ciclos", {
       method: "POST",
       headers: {
@@ -34,7 +34,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ nombre, id_familia }),
+      body: JSON.stringify({ nombre, familia_profesional_id }),
     });
 
     const data = await response.json();
@@ -50,7 +50,9 @@ export const useCiclosStore = defineStore("ciclos", () => {
   }
 
   function getCiclosPorFamilia(id_familia: number) {
-    return ciclos.value.filter((ciclo) => ciclo.id_familia === id_familia);
+    return ciclos.value.filter(
+      (ciclo) => ciclo.familia_profesional_id === id_familia,
+    );
   }
 
   return { ciclos, error, fetchCiclos, createCiclo, getCiclosPorFamilia };

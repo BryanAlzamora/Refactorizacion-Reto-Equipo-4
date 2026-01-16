@@ -62,28 +62,27 @@ class EmpresasController extends Controller {
         //
     }
 
-    public function miEmpresa()
-{
-    $userId = auth()->id();
+    public function miEmpresa() {
+        $userId = auth()->id();
 
-    $empresa = DB::table('alumnos')
-        ->join('estancias', 'alumnos.id_alumno', '=', 'estancias.id_alumno')
-        ->join('empresas', 'estancias.id_empresa', '=', 'empresas.id_empresa')
-        ->where('alumnos.user_id', $userId)
-        ->select(
-            'empresas.cif',
-            'empresas.nombre',
-            'empresas.telefono',
-            'empresas.email',
-            'empresas.direccion',
-        )
-        ->first();
+        $empresa = DB::table('alumnos')
+            ->join('estancias', 'alumnos.id_alumno', '=', 'estancias.id_alumno')
+            ->join('empresas', 'estancias.id_empresa', '=', 'empresas.id_empresa')
+            ->where('alumnos.user_id', $userId)
+            ->select(
+                'empresas.cif',
+                'empresas.nombre',
+                'empresas.telefono',
+                'empresas.email',
+                'empresas.direccion',
+            )
+            ->first();
 
-    if (!$empresa) {
-        return response()->json(['message' => 'Empresa no encontrada para este alumno'], 404);
-    }
+        if (!$empresa) {
+            return response()->json(['message' => 'Empresa no encontrada para este alumno'], 404);
+        }
 
-    return response()->json($empresa);
+        return response()->json($empresa);
     }
     /**
      * Remove the specified resource from storage.

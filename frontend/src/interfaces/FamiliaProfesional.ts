@@ -1,6 +1,6 @@
 export interface FamiliaProfesional {
-  id_familia: number;
+  id: number;
   nombre: string;
   codigo: string;
-  id_centro: number;
+  centro_id: number;
 }

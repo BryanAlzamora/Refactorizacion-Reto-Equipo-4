@@ -116,8 +116,8 @@ function resetForm() {
         <option :value="0" disabled>-- Selecciona una opción --</option>
         <option
           v-for="familia in familiaProfesionalStore.familiasProfesionales"
-          :key="familia.id_familia"
-          :value="familia.id_familia"
+          :key="familia.id"
+          :value="familia.id"
         >
           {{ familia.nombre }}
         </option>
@@ -153,11 +153,7 @@ function resetForm() {
         required
       >
         <option :value="0" disabled>-- Selecciona una opción --</option>
-        <option
-          v-for="c in ciclosFamilia"
-          :key="c.id_ciclo"
-          :value="c.id_ciclo"
-        >
+        <option v-for="c in ciclosFamilia" :key="c.id" :value="c.id">
           {{ c.nombre }}
         </option>
       </select>
