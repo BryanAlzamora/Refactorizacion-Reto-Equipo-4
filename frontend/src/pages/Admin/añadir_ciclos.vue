@@ -53,8 +53,8 @@ function agregarCiclo() {
         <option :value="0" disabled>-- Selecciona una opción --</option>
         <option
           v-for="familia in familiaProfesionalStore.familiasProfesionales"
-          :key="familia.id_familia"
-          :value="familia.id_familia"
+          :key="familia.id"
+          :value="familia.id"
         >
           {{ familia.nombre }}
         </option>

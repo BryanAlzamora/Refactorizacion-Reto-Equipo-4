@@ -1,10 +1,10 @@
 export interface Seguimiento {
-  id_seguimiento: number;
+  id: number;
   accion: string;
   fecha: string;
   descripcion?: string | null;
   via?: string | null;
-  id_estancia: number;
+  estancia_id: number;
   created_at?: string;
   updated_at?: string;
 }

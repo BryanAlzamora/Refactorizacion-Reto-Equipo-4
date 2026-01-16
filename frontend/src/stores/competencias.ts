@@ -37,7 +37,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
   }
 
   async function createCompetenciaTecnica(
-    id_ciclo: number,
+    ciclo_id: number,
     descripcion: string,
   ) {
     const response = await fetch(
@@ -49,7 +49,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id_ciclo, descripcion }),
+        body: JSON.stringify({ ciclo_id, descripcion }),
       },
     );
 
@@ -69,7 +69,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
   }
 
   async function createCompetenciaTransversal(
-    id_familia: number,
+    familia_profesional_id: number,
     descripcion: string,
   ) {
     const response = await fetch(
@@ -81,7 +81,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id_familia, descripcion }),
+        body: JSON.stringify({ familia_profesional_id, descripcion }),
       },
     );
 

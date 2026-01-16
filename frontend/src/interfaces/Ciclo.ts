@@ -1,7 +1,7 @@
 import type { FamiliaProfesional } from "./FamiliaProfesional";
 
 export interface Ciclo {
-  id_ciclo: number;
+  id: number;
   nombre: string;
-  id_familia: FamiliaProfesional["id_familia"];
+  familia_profesional_id: FamiliaProfesional["id"];
 }
