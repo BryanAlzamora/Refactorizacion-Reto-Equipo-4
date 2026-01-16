@@ -27,8 +27,7 @@ const miEmpresa = computed(() => empresasStore.empresas?.[0] ?? null)
         <p><strong>CIF:</strong> {{ miEmpresa.cif }}</p>
         <p><strong>Correo electrónico:</strong> {{ miEmpresa.email }}</p>
         <p><strong>Teléfono:</strong> {{ miEmpresa.telefono ?? 'No indicado' }}</p>
-        <p><strong>Calle:</strong> {{ miEmpresa.calle ?? 'No indicada' }}</p>
-        <p><strong>Ciudad:</strong> {{ miEmpresa.ciudad ?? 'No indicada' }}</p>
+        <p><strong>Direccion:</strong> {{ miEmpresa.direccion ?? 'No indicada' }}</p>
       </div>
     </div>
 

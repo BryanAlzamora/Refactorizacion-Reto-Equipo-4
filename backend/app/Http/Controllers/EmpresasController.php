@@ -75,8 +75,7 @@ class EmpresasController extends Controller {
             'empresas.nombre',
             'empresas.telefono',
             'empresas.email',
-            'empresas.calle',
-            'empresas.ciudad',
+            'empresas.direccion',
         )
         ->first();
 
