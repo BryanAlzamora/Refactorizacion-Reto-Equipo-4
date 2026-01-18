@@ -21,10 +21,12 @@ class TutorEmpresaController extends Controller {
         //
     }
 
-    public function getAlumnosByInstructor($instructorId) {
-        $alumnos = TutorEmpresa::findOrFail($instructorId)
-            ->alumnosConEstancia()
-            ->get();
+    public function getAlumnosByCurrentInstructor(Request $request) {
+        $userId = $request->user()->id;
+
+        $instructor = TutorEmpresa::where('user_id', $userId)->firstOrFail();
+
+        $alumnos = $instructor->alumnosConEstancia()->get();
 
         return response()->json($alumnos);
     }
