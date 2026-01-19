@@ -189,7 +189,7 @@ const router = createRouter({
           meta: { role: "tutor_empresa" },
         },
         {
-          path: "tutor-empresa/calificacion",
+          path: "tutor-empresa/alumnos-asignados/:alumnoId/calificacion",
           name: "tutor_empresa-calificacion",
           components: {
             main: () => import("@/pages/TutorEmpresa/calificacion.vue"),

@@ -7,13 +7,11 @@ import router from "@/router";
 
 const props = defineProps<{
   alumnoId: number;
-  asignar: boolean;
 }>();
 
 const competenciaStore = useCompetenciasStore();
 
 const competencias = ref<Competencia[]>([]);
-const competenciasSeleccionadas = ref<number[]>([]);
 const competenciasCalificadas = ref<Record<number, number>>({});
 
 const isLoading = ref(true);
@@ -24,31 +22,28 @@ const tieneCalificacion = (competenciaId: number): boolean => {
 
 onMounted(async () => {
   try {
-    await competenciaStore.fetchCompetenciasTecnicasByAlumno(props.alumnoId);
+    await competenciaStore.fetchCompetenciasTransversalesByAlumno(
+      props.alumnoId,
+    );
+
     competencias.value = competenciaStore.competencias;
 
     // Cargar las calificaciones existentes
     const calificaciones =
-      await competenciaStore.getCalificacionesCompetenciasTecnicas(
+      await competenciaStore.getCalificacionesCompetenciasTransversales(
         props.alumnoId,
       );
 
     // Transformar array de objetos a Record<number, number>
     if (Array.isArray(calificaciones)) {
       calificaciones.forEach((item: any) => {
-        const competenciaId = item.competencia_tec_id;
-        competenciasCalificadas.value[competenciaId] = Math.round(
+        competenciasCalificadas.value[item.competencia_trans_id] = Math.round(
           Number(item.nota),
         );
-
-        // Si hay asignación, marcar como seleccionada en los checkboxes
-        if (props.asignar) {
-          competenciasSeleccionadas.value.push(competenciaId);
-        }
       });
     }
   } catch (error) {
-    console.error("Error al cargar alumnos:", error);
+    console.error("Error al cargar competencias:", error);
   } finally {
     isLoading.value = false;
   }
@@ -58,22 +53,7 @@ const volver = () => {
   router.back();
 };
 
-async function guardar() {
-  let ok = false;
-
-  ok = await competenciaStore.asignarCompetenciasTecnica(
-    props.alumnoId,
-    competenciasSeleccionadas.value,
-  );
-
-  if (ok) {
-    setTimeout(() => {
-      volver();
-    }, 1000);
-  }
-}
-
-async function guardarCalificacionesTecnicas() {
+async function guardarCalificacionesTransversales() {
   let ok = false;
 
   const payload = Object.entries(competenciasCalificadas.value).map(
@@ -83,7 +63,7 @@ async function guardarCalificacionesTecnicas() {
     }),
   );
 
-  ok = await competenciaStore.calificarCompetenciasTecnicas(
+  ok = await competenciaStore.calificarCompetenciasTransversales(
     props.alumnoId,
     payload,
   );
@@ -108,7 +88,7 @@ async function guardarCalificacionesTecnicas() {
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Cargando...</span>
     </div>
-    <p class="mt-3 text-muted">Cargando competencias técnicas...</p>
+    <p class="mt-3 text-muted">Cargando competencias transversales...</p>
   </div>
   <!-- Sin competencias -->
   <div
@@ -117,45 +97,18 @@ async function guardarCalificacionesTecnicas() {
     role="alert"
   >
     <i class="bi bi-info-circle-fill me-2"></i>
-    <div>El ciclo del alumno no tiene competencias asignadas.</div>
+    <div>
+      La familia profesional del alumno no tiene competencias transversales
+      asignadas.
+    </div>
   </div>
   <!-- Lista de competencias -->
   <div v-else>
     <ul class="list-group">
       <li
-        class="list-group-item my-2"
-        v-for="competencia in competencias"
-        :key="competencia.id"
-        v-if="props.asignar"
-      >
-        <input
-          class="form-check-input me-1"
-          type="checkbox"
-          :id="`competencia-${competencia.id}`"
-          :value="competencia.id"
-          v-model="competenciasSeleccionadas"
-          :disabled="tieneCalificacion(competencia.id)"
-        />
-
-        <label
-          class="form-check-label stretched-link"
-          :for="`competencia-${competencia.id}`"
-          :class="{ 'text-muted': tieneCalificacion(competencia.id) }"
-        >
-          {{ competencia.descripcion }}
-          <small
-            v-if="tieneCalificacion(competencia.id)"
-            class="text-muted"
-          >
-            (ya tiene calificación)
-          </small>
-        </label>
-      </li>
-      <li
         class="list-group-item my-2 d-flex align-items-center"
         v-for="competencia in competencias"
         :key="competencia.id"
-        v-if="!props.asignar"
       >
         <label :for="`competencia-${competencia.id}`" class="mx-1">
           {{ competencia.descripcion }}
@@ -183,21 +136,10 @@ async function guardarCalificacionesTecnicas() {
         </select>
       </li>
     </ul>
-    <button class="btn btn-primary" v-if="props.asignar" @click="guardar">
-      Guardar
-    </button>
-    <button
-      class="btn btn-primary"
-      v-if="!props.asignar"
-      @click="guardarCalificacionesTecnicas"
-    >
-      Guardar Calificación Técnicas
+    <button class="btn btn-primary" @click="guardarCalificacionesTransversales">
+      Guardar Calificaciónes Transversales
     </button>
   </div>
 </template>
 
-<style scoped>
-label {
-  cursor: pointer;
-}
-</style>
+<style scoped></style>

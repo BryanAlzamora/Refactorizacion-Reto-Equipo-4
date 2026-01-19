@@ -29,9 +29,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Competencias
     Route::get('/competencias', [CompetenciasController::class, 'index']);
     Route::get('/competenciasTecnicas/alumno/{alumno_id}', [CompetenciasController::class, 'getCompetenciasTecnicasByAlumno']);
-    Route::post('/competenciasTecnicas/asignar', [CompetenciasController::class, 'storeCompetenciasTecnicasAsignadas']);
+    Route::get('/competenciasTransversales/alumno/{alumno_id}', [CompetenciasController::class, 'getCompetenciasTransversalesByAlumno']);
+    Route::get('/competenciasTecnicas/calificaciones/{alumno_id}', [CompetenciasController::class, 'getCalificacionesCompetenciasTecnicas']);
+    Route::get('/competenciasTransversales/calificaciones/{alumno_id}', [CompetenciasController::class, 'getCalificacionesCompetenciasTransversales']);
+
+    Route::post('/competenciasTransversales/calificar', [CompetenciasController::class, 'storeCompetenciasTransversalesCalificadas']);
     Route::post('/competencia/tecnica', [CompetenciasController::class, 'storeTecnica']);
     Route::post('/competencia/transversal', [CompetenciasController::class, 'storeTransversal']);
+    Route::post('/competenciasTecnicas/asignar', [CompetenciasController::class, 'storeCompetenciasTecnicasAsignadas']);
+    Route::post('/competenciasTecnicas/calificar', [CompetenciasController::class, 'storeCompetenciasTecnicasCalificadas']);
 
     // Empresas
     Route::get('/empresas', [EmpresasController::class, 'index']);

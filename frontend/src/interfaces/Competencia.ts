@@ -1,5 +1,5 @@
 export interface Competencia {
-  id: number
-  descripcion: string
-  tipo: 'TECNICA' | 'TRANSVERSAL'
+  id: number;
+  descripcion: string;
+  tipo: "TECNICA" | "TRANSVERSAL";
 }

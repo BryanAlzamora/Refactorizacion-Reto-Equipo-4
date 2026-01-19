@@ -116,7 +116,7 @@ const volverAlumnos = () => {
             <b>{{ alumno.nombre }} {{ alumno.apellidos }}</b>
             va a trabajar
           </p>
-          <ListaCompetenciasTecnicas :alumnoId="alumnoId" />
+          <ListaCompetenciasTecnicas :alumnoId="alumnoId" :asignar="true" />
         </div>
       </div>
     </div>
