@@ -8,7 +8,7 @@ const tutorId = authStore.currentUser.id;
 </script>
 
 <template>
-  <h2>MIS ALUMNOS</h2>
+  <h2>Mis Alumnos</h2>
   <hr />
   <AlumnosAsignados tipoTutor="egibide" :tutorId="tutorId.toString()" />
 </template>
