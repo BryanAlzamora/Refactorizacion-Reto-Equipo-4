@@ -110,6 +110,9 @@ class AlumnosController extends Controller {
     }
     public function notaCuadernoLogeado()
 {
+    $user = auth()->user();
+    if (!$user) return response()->json(['message' => 'No autenticado'], 401);
+
     $alumno = $user->alumno;
     if (!$alumno) {
         return response()->json(['nota' => null, 'message' => 'Sin alumno asociado'], 200);
