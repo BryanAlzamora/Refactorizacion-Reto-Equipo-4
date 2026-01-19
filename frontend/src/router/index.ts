@@ -134,6 +134,14 @@ const router = createRouter({
           meta: { role: "tutor_empresa" },
         },
         {
+          path: "tutor-empresa/informacion",
+          name: "tutor-empresa-informacion",
+          components: {
+            main: () => import("@/pages/TutorEmpresa/informacion.vue"),
+          },
+          meta: { role: "tutor_empresa" },
+        },
+        {
           path: "tutor-empresa/alumnos-asignados",
           name: "tutor_empresa-alumnos_asignados",
           components: {
