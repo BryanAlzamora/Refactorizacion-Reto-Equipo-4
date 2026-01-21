@@ -94,9 +94,9 @@ const irAsignarEmpresa = () => {
   });
 };
 
-const irAsignarHorario = () => {
+const irAsignarHorasPeriodo = () => {
   router.push({
-    name: "tutor_egibide-horario_calendario",
+    name: "tutor_egibide-horas_periodo",
     params: { alumnoId: alumnoId },
     query: { tipoTutor: tipoTutor, tutorId: tutorId },
   });
@@ -314,7 +314,7 @@ const formatDate = (dateString: string) => {
         <div class="col-md" v-if="tipoTutor === 'egibide'">
           <div
             class="card h-100 action-card"
-            @click="irAsignarHorario"
+            @click="irAsignarHorasPeriodo"
             role="button"
             tabindex="0"
           >
@@ -322,7 +322,7 @@ const formatDate = (dateString: string) => {
               <div class="icon-wrapper mb-3">
                 <i class="bi bi-calendar-plus display-4 text-success"></i>
               </div>
-              <h5 class="card-title">Asignar horario y calendario</h5>
+              <h5 class="card-title">Asignar horas y periodo</h5>
               <div class="mt-3">
                 <i class="bi bi-arrow-right-circle"></i>
               </div>

@@ -109,10 +109,10 @@ const router = createRouter({
           meta: { role: "tutor_egibide" },
         },
         {
-          path: "tutor-egibide/horario-calendario/:alumnoId/asignar-horario-calendario",
-          name: "tutor_egibide-horario_calendario",
+          path: "tutor-egibide/horas-periodo/:alumnoId/asignar-horas-periodo",
+          name: "tutor_egibide-horas_periodo",
           components: {
-            main: () => import("@/pages/TutorEgibide/horario_calendario.vue"),
+            main: () => import("@/pages/TutorEgibide/horas_periodo.vue"),
           },
           meta: { role: "tutor_egibide" },
         },

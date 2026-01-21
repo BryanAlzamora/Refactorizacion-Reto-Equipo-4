@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Toast from "@/components/Notification/Toast.vue";
 import type { Alumno } from "@/interfaces/Alumno";
 import { useTutorEgibideStore } from "@/stores/tutorEgibide";
 import { useAuthStore } from "@/stores/auth";
@@ -25,10 +26,10 @@ const alumnoId = Number(route.params.alumnoId);
 
 onMounted(async () => {
   try {
-    // Buscar alumno en el store
-    alumno.value = tutorEgibideStore.alumnosAsignados.find((a: Alumno) => {
-      return Number(a.pivot?.alumno_id) === alumnoId || Number(a.id) === alumnoId;
-    }) || null;
+    alumno.value =
+      tutorEgibideStore.alumnosAsignados.find((a: Alumno) => {
+        return Number(a.pivot?.alumno_id) === alumnoId || Number(a.id) === alumnoId;
+      }) || null;
 
     if (!alumno.value) {
       error.value = "Alumno no encontrado";
@@ -48,12 +49,10 @@ const volverAlumnos = () => {
   router.back();
 };
 
-// Función para guardar horario y calendario
+// Guardar horario y calendario
 const guardarHorario = async () => {
   try {
-    // Validaciones
     if (!calendarioInicio.value || !horasTotales.value) {
-      alert("Debes completar la fecha inicio, fecha fin y horas totales");
       return;
     }
 
@@ -64,8 +63,7 @@ const guardarHorario = async () => {
       horas_totales: horasTotales.value,
     };
 
-    // Ajusta la URL según tu backend
-    const response = await fetch("http://localhost:8000/api/horario", {
+    const response = await fetch("http://localhost:8000/api/horasperiodo", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,8 +73,6 @@ const guardarHorario = async () => {
     });
 
     let data: any = null;
-
-    // Solo parsear JSON si el backend devuelve content-type JSON
     const contentType = response.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
       data = await response.json();
@@ -84,20 +80,38 @@ const guardarHorario = async () => {
 
     if (!response.ok) {
       console.error("Error backend:", data || response.statusText);
-      alert(data?.message || `Error al guardar la estancia. Código: ${response.status}`);
       return;
     }
 
-    alert("Horario y calendario guardados correctamente");
+    // Actualizar store local
+    const alumnoStore = tutorEgibideStore.alumnosAsignados.find(
+      (a) => Number(a.pivot?.alumno_id) === alumnoId || Number(a.id) === alumnoId
+    );
+
+    if (alumnoStore) {
+      (alumnoStore as any).pivot = {
+        ...(alumnoStore.pivot ?? { alumno_id: alumnoId }),
+        fecha_inicio: calendarioInicio.value,
+        fecha_fin: calendarioFin.value,
+        horas_totales: horasTotales.value,
+      };
+    }
+
     volver();
   } catch (err) {
     console.error(err);
-    alert("Error de conexión al guardar la estancia");
   }
 };
 </script>
 
 <template>
+
+  <Toast
+    v-if="tutorEgibideStore.message"
+    :message="tutorEgibideStore.message"
+    :messageType="tutorEgibideStore.messageType"
+  />
+
   <div class="container mt-4">
     <!-- Loading -->
     <div v-if="isLoading" class="text-center py-5">
@@ -131,18 +145,15 @@ const guardarHorario = async () => {
               {{ alumno?.nombre }} {{ alumno?.apellidos }}
             </a>
           </li>
-          <li class="breadcrumb-item active">Asignar horario y calendario</li>
+          <li class="breadcrumb-item active">Asignar horas y periodo</li>
         </ol>
       </nav>
 
       <!-- Horario y calendario -->
       <div class="card shadow-sm">
-        <div class="card-header">
-          <h3 class="mb-0">Horario y calendario</h3>
-        </div>
         <div class="card-body">
           <p class="mb-4">
-            Introduce las horas y calendario del alumno
+            Introduce las horas y periodo del alumno
             <b>{{ alumno?.nombre }} {{ alumno?.apellidos }}</b>
           </p>
 
@@ -150,11 +161,21 @@ const guardarHorario = async () => {
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">Fecha inicio *</label>
-              <input type="date" class="form-control" v-model="calendarioInicio" required />
+              <input
+                type="date"
+                class="form-control"
+                v-model="calendarioInicio"
+                required
+              />
             </div>
+
             <div class="col-md-6 mb-3">
               <label class="form-label">Fecha fin</label>
-              <input type="date" class="form-control" v-model="calendarioFin" />
+              <input
+                type="date"
+                class="form-control"
+                v-model="calendarioFin"
+              />
             </div>
           </div>
 
@@ -173,12 +194,8 @@ const guardarHorario = async () => {
 
           <!-- Acciones -->
           <div class="d-flex justify-content-end gap-2 mt-4">
-            <button class="btn btn-outline-secondary" @click="volver">
-              Cancelar
-            </button>
-            <button class="btn btn-primary" @click="guardarHorario">
-              Guardar
-            </button>
+            <button class="btn btn-outline-secondary" @click="volver">Cancelar</button>
+            <button class="btn btn-primary" @click="guardarHorario">Guardar</button>
           </div>
         </div>
       </div>
@@ -190,6 +207,7 @@ const guardarHorario = async () => {
 .breadcrumb-item a {
   color: var(--bs-primary);
 }
+
 .breadcrumb-item a:hover {
   color: var(--bs-primary);
   text-decoration: underline !important;
