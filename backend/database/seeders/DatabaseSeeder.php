@@ -28,10 +28,10 @@ class DatabaseSeeder extends Seeder {
             InstructorSeeder::class,
 
             AsignaturaSeeder::class,
-            ResultadoAprendizajeSeeder::class,
+            ResultadosAprendizajeSeeder::class,
             CompetenciaTransSeeder::class,
             CompetenciaTecSeeder::class,
-            CompetenciaTecRaSeeder::class,
+            CompetenciasTecRaSeeder::class,
 
             EstanciaSeeder::class,
             CuadernoSeeder::class,
