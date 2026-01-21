@@ -49,12 +49,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/empresas/asignar', [EmpresasController::class, 'storeEmpresaAsignada']);
 
     // Alumnos
-    
     Route::get('/me/inicio', [AlumnosController::class, 'inicio']);
     Route::get('/alumnos', [AlumnosController::class, 'index']);
     Route::post('/alumnos', [AlumnosController::class, 'store']);
     Route::get('/me/alumno', [AlumnosController::class, 'me']);
     Route::get('/me/nota-cuaderno', [AlumnosController::class, 'notaCuadernoLogeado']);
+    Route::get('/alumnos/{alumno}/entregas', [AlumnosController::class, 'entregas']);
 
     //Entregas
     Route::get('/entregas/mias', [EntregaController::class, 'mias']);

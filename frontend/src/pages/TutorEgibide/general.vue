@@ -19,12 +19,6 @@ const isLoading = ref(true);
 const alumnoId = Number(route.params.alumnoId);
 const tutorId = route.query.tutorId as string;
 
-// Determinar si es general o cuaderno según nombre de ruta
-const tipoSeguimiento = computed(() => {
-  if (route.name === "tutor_egibide-seguimiento-cuaderno") return "cuaderno";
-  return "general";
-});
-
 onMounted(async () => {
   try {
     isLoading.value = true;
@@ -94,14 +88,14 @@ const volverAlumnos = () => {
               Seguimiento
             </a>
           </li>
-          <li class="breadcrumb-item active text-capitalize">{{ tipoSeguimiento }}</li>
+          <li class="breadcrumb-item active text-capitalize">General</li>
         </ol>
       </nav>
 
       <!-- Lista de seguimientos -->
       <div class="card shadow-sm">
         <div class="card-header">
-          <h3 class="mb-1 text-capitalize">{{ tipoSeguimiento }}</h3>
+          <h3 class="mb-1 text-capitalize">General</h3>
         </div>
         <div class="card-body">
           <ul class="list-group">

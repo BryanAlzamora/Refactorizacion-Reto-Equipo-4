@@ -187,6 +187,29 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     return true;
   }
 
+async function fetchEntregasAlumno(alumnoId: number) {
+  loadingEntregas.value = true;
+  try {
+    const response = await fetch(`http://localhost:8000/api/alumnos/${alumnoId}/entregas`, {
+      headers: {
+        Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) throw new Error("Error al cargar entregas");
+
+    entregas.value = await response.json(); // Guardamos todas las entregas del alumno
+  } catch (err) {
+    console.error(err);
+    message.value = "Error al cargar las entregas del alumno";
+    messageType.value = "error";
+  } finally {
+    loadingEntregas.value = false;
+  }
+}
+
+
   return {
     alumnos,
     alumno,
@@ -205,5 +228,6 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     fetchAlumno,
     fetchNotaCuaderno,
     createAlumno,
+    fetchEntregasAlumno
   };
 });

@@ -76,6 +76,11 @@ const volverAlumnos = () => {
   router.back();
   router.back();
 };
+
+function formatDate(fecha: string) {
+  const [y, m, d] = fecha.split("-");
+  return `${d}/${m}/${y}`;
+}
 </script>
 
 <template>
@@ -108,7 +113,12 @@ const volverAlumnos = () => {
               {{ alumno?.nombre }} {{ alumno?.apellidos }}
             </a>
           </li>
-          <li class="breadcrumb-item active">Seguimiento / Cuaderno</li>
+          <li class="breadcrumb-item">
+            <a href="#" @click.prevent="volver">
+              Seguimiento
+            </a>
+          </li>
+          <li class="breadcrumb-item active text-capitalize">Cuaderno</li>
         </ol>
       </nav>
 
@@ -123,7 +133,7 @@ const volverAlumnos = () => {
             <span class="ms-2">Cargando...</span>
           </div>
 
-          <div v-else-if="alumnosStore.entregasAlumno.length === 0" class="p-3 text-muted">
+          <div v-else-if="alumnosStore.entregas.length === 0" class="p-3 text-muted">
             Todavía no hay entregas.
           </div>
 
@@ -136,9 +146,9 @@ const volverAlumnos = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="e in alumnosStore.entregasAlumno" :key="e.id">
+              <tr v-for="e in alumnosStore.entregas" :key="e.id">
                 <td class="text-truncate" style="max-width: 500px;">{{ e.archivo }}</td>
-                <td>{{ e.fecha }}</td>
+                <td>{{ formatDate(e.fecha) }}</td>
                 <td>
                   <button class="btn btn-sm btn-outline-primary" @click="descargar(e.id)">
                     Descargar

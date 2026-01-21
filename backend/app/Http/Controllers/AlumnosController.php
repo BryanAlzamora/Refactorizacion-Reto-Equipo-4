@@ -6,6 +6,7 @@ use App\Models\Alumnos;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class AlumnosController extends Controller {
     /**
@@ -192,35 +193,48 @@ class AlumnosController extends Controller {
         return response()->json($row);
     }
     public function notaCuadernoLogeado()
-{
-    $user = auth()->user();
-    if (!$user) return response()->json(['message' => 'No autenticado'], 401);
+    {
+        $user = auth()->user();
+        if (!$user) return response()->json(['message' => 'No autenticado'], 401);
 
-    $alumno = $user->alumno;
-    if (!$alumno) {
-        return response()->json(['nota' => null, 'message' => 'Sin alumno asociado'], 200);
+        $alumno = $user->alumno;
+        if (!$alumno) {
+            return response()->json(['nota' => null, 'message' => 'Sin alumno asociado'], 200);
+        }
+
+        $estancia = $alumno->estancias()->orderByDesc('fecha_fin')->first();
+        if (!$estancia) {
+            return response()->json(['nota' => null, 'message' => 'No hay estancia para este alumno todavía.'], 200);
+        }
+
+        if ($estancia->fecha_fin && $estancia->fecha_fin > now()->toDateString()) {
+            return response()->json(['nota' => null, 'message' => 'La estancia aún no ha finalizado.'], 200);
+        }
+
+        $cuaderno = $estancia->cuadernoPracticas;
+        if (!$cuaderno) {
+            return response()->json(['nota' => null, 'message' => 'No hay cuaderno asociado.'], 200);
+        }
+        \Log::info('Cuaderno ID', ['id' => $cuaderno->id]);
+        \Log::info('Nota relation raw', ['nota' => $cuaderno->nota]);
+        $nota = $cuaderno->nota?->nota;
+
+        return response()->json([
+            'nota' => $nota !== null ? (float) $nota : null,
+            'message' => $nota === null ? 'La estancia ha finalizado, pero aún no hay nota del cuaderno.' : null
+        ], 200);
     }
 
-    $estancia = $alumno->estancias()->orderByDesc('fecha_fin')->first();
-    if (!$estancia) {
-        return response()->json(['nota' => null, 'message' => 'No hay estancia para este alumno todavía.'], 200);
-    }
+    public function entregas($alumnoId)
+    {
+        $entregas = DB::table('entregas')
+            ->join('cuadernos_practicas', 'entregas.cuaderno_practicas_id', '=', 'cuadernos_practicas.id')
+            ->join('estancias', 'cuadernos_practicas.estancia_id', '=', 'estancias.id')
+            ->where('estancias.alumno_id', $alumnoId)
+            ->select('entregas.id', 'entregas.archivo', 'entregas.fecha')
+            ->orderBy('entregas.fecha', 'desc')
+            ->get();
 
-    if ($estancia->fecha_fin && $estancia->fecha_fin > now()->toDateString()) {
-        return response()->json(['nota' => null, 'message' => 'La estancia aún no ha finalizado.'], 200);
+        return response()->json($entregas);
     }
-
-    $cuaderno = $estancia->cuadernoPracticas;
-    if (!$cuaderno) {
-        return response()->json(['nota' => null, 'message' => 'No hay cuaderno asociado.'], 200);
-    }
-    \Log::info('Cuaderno ID', ['id' => $cuaderno->id]);
-    \Log::info('Nota relation raw', ['nota' => $cuaderno->nota]);
-    $nota = $cuaderno->nota?->nota;
-
-    return response()->json([
-        'nota' => $nota !== null ? (float) $nota : null,
-        'message' => $nota === null ? 'La estancia ha finalizado, pero aún no hay nota del cuaderno.' : null
-    ], 200);
-}
 }
