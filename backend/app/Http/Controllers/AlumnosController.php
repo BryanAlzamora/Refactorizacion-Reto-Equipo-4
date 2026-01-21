@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumnos;
+use App\Models\Asignatura;
+use App\Models\Estancia;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -101,8 +103,8 @@ class AlumnosController extends Controller {
 
         $estanciaActual->load([
             'empresa:id,nombre',
-            'tutor:id,nombre,apellidos,telefono',                 // ✅
-            'instructor:id,nombre,apellidos,telefono,empresa_id', // ✅
+            'tutor:id,nombre,apellidos,telefono',                
+            'instructor:id,nombre,apellidos,telefono,empresa_id', 
             'horariosDia.horariosTramo',
         ]);
 
@@ -121,12 +123,12 @@ class AlumnosController extends Controller {
                     'tutor' => $estanciaActual->tutor ? [
                     'nombre' => $estanciaActual->tutor->nombre,
                     'apellidos' => $estanciaActual->tutor->apellidos,
-                    'telefono' => $estanciaActual->tutor->telefono, // ✅
+                    'telefono' => $estanciaActual->tutor->telefono, 
                 ] : null,
                 'instructor' => $estanciaActual->instructor ? [
                     'nombre' => $estanciaActual->instructor->nombre,
                     'apellidos' => $estanciaActual->instructor->apellidos,
-                    'telefono' => $estanciaActual->instructor->telefono, // ✅
+                    'telefono' => $estanciaActual->instructor->telefono, 
                 ] : null,
                 'horario' => $estanciaActual->horariosDia->map(function ($dia) {
                     return [
@@ -192,8 +194,8 @@ class AlumnosController extends Controller {
 
         return response()->json($row);
     }
-    public function notaCuadernoLogeado()
-    {
+
+    public function notaCuadernoLogeado() {
         $user = auth()->user();
         if (!$user) return response()->json(['message' => 'No autenticado'], 401);
 
@@ -215,8 +217,6 @@ class AlumnosController extends Controller {
         if (!$cuaderno) {
             return response()->json(['nota' => null, 'message' => 'No hay cuaderno asociado.'], 200);
         }
-        \Log::info('Cuaderno ID', ['id' => $cuaderno->id]);
-        \Log::info('Nota relation raw', ['nota' => $cuaderno->nota]);
         $nota = $cuaderno->nota?->nota;
 
         return response()->json([
@@ -224,6 +224,17 @@ class AlumnosController extends Controller {
             'message' => $nota === null ? 'La estancia ha finalizado, pero aún no hay nota del cuaderno.' : null
         ], 200);
     }
+
+    public function getAsignaturasAlumno($alumno_id) {
+        $estancia = Estancia::where('alumno_id', $alumno_id)
+            ->with('curso.ciclo.asignaturas')
+            ->firstOrFail();
+
+        $asignaturas = $estancia->curso->ciclo->asignaturas;
+
+        return response()->json($asignaturas, 200);
+    }
+}
 
     public function entregas($alumnoId)
     {

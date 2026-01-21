@@ -2,10 +2,12 @@ import type { Alumno } from "@/interfaces/Alumno";
 import { defineStore } from "pinia";
 import { useAuthStore } from "./auth";
 import { ref } from "vue";
+import type { Asignatura } from "@/interfaces/Asignatura";
 
 export const useAlumnosStore = defineStore("alumnos", () => {
   const alumnos = ref<Alumno[]>([]);
   const alumno = ref<Alumno[]>([]);
+  const asignaturas = ref<Asignatura[]>([]);
   const notaCuaderno = ref<number | null>(null);
   const notaCuadernoMsg = ref<string | null>(null);
   const inicio = ref<any | null>(null);
@@ -100,6 +102,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
       ? (data as Alumno[])
       : ([data] as Alumno[]);
   }
+
     async function fetchInicio() {
     loadingInicio.value = true;
 
@@ -187,6 +190,32 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     return true;
   }
 
+  async function getAsignaturasAlumno(alumno_id: number) {
+    const response = await fetch(
+      `http://localhost:8000/api/alumnos/${alumno_id}/asignaturas`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+          Accept: "application/json",
+        },
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setMessage(
+        data.message || "Error desconocido, inténtalo más tarde",
+        "error",
+      );
+      return false;
+    }
+
+    asignaturas.value = data as Asignatura[];
+    return true;
+  }
+  
 async function fetchEntregasAlumno(alumnoId: number) {
   loadingEntregas.value = true;
   try {
@@ -215,6 +244,7 @@ async function fetchEntregasAlumno(alumnoId: number) {
     alumno,
     notaCuaderno,
     notaCuadernoMsg,
+    asignaturas,
     message,
     messageType,
     entregas,
@@ -226,6 +256,7 @@ async function fetchEntregasAlumno(alumnoId: number) {
     fetchMisEntregas,
     fetchAlumnos,
     fetchAlumno,
+    getAsignaturasAlumno,
     fetchNotaCuaderno,
     createAlumno,
     fetchEntregasAlumno

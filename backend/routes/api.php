@@ -8,6 +8,7 @@ use App\Http\Controllers\CompetenciasController;
 use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\AlumnosController;
 use App\Http\Controllers\FamiliaProfesionalController;
+use App\Http\Controllers\NotasController;
 use App\Http\Controllers\TutorEgibideController;
 use App\Http\Controllers\TutorEmpresaController;
 use App\Http\Controllers\SeguimientosController;
@@ -42,6 +43,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/competenciasTecnicas/asignar', [CompetenciasController::class, 'storeCompetenciasTecnicasAsignadas']);
     Route::post('/competenciasTecnicas/calificar', [CompetenciasController::class, 'storeCompetenciasTecnicasCalificadas']);
 
+    // Notas
+    Route::get('/notas/alumno/{alumno_id}/tecnicas', [NotasController::class, 'obtenerNotasTecnicas']);
+    Route::get('/notas/alumno/{alumno_id}/transversal', [NotasController::class, 'obtenerNotasTransversales']);
+
     // Empresas
     Route::get('/empresas', [EmpresasController::class, 'index']);
     Route::post('/empresas', [EmpresasController::class, 'store']);
@@ -54,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/alumnos', [AlumnosController::class, 'store']);
     Route::get('/me/alumno', [AlumnosController::class, 'me']);
     Route::get('/me/nota-cuaderno', [AlumnosController::class, 'notaCuadernoLogeado']);
+    Route::get('/alumnos/{alumno_id}/asignaturas', [AlumnosController::class, 'getAsignaturasAlumno']);
     Route::get('/alumnos/{alumno}/entregas', [AlumnosController::class, 'entregas']);
 
     //Entregas
