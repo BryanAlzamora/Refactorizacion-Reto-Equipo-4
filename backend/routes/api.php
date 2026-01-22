@@ -67,17 +67,22 @@ Route::middleware('auth:sanctum')->group(
         //Entregas
         Route::get('/entregas/mias', [EntregaController::class, 'mias']);
         Route::post('/entregas', [EntregaController::class, 'store']);
+        Route::delete('/entregas/{id}', [EntregaController::class, 'destroy']);
 
         // Tutor Egibide
         Route::get('/tutorEgibide/{tutorId}/alumnos', [TutorEgibideController::class, 'getAlumnosByCurrentTutor']);
+        Route::get('/tutorEgibide/{tutorId}/empresas', [TutorEgibideController::class, 'conseguirEmpresasporTutor']);
+        Route::get('/tutorEgibide/empresa/{empresaId}', [TutorEgibideController::class, 'getDetalleEmpresa']);
         Route::get('/me/tutor-egibide', [TutorEgibideController::class, 'me']);
-        Route::post('/horasperiodo', [TutorEgibideController::class, 'horasperiodo']);
+        Route::post('/horasperiodo', [TutorEgibideController::class, 'horasperiodo']);  
 
         // Tutor Empresa
         Route::get('/tutorEmpresa/{tutorId}/alumnos', [TutorEmpresaController::class, 'getAlumnosByCurrentInstructor']);
         Route::get('/me/tutor-empresa', [TutorEmpresaController::class, 'me']);
 
         // Seguimientos
-        Route::get('/seguimientos', [SeguimientosController::class, 'index']);
+        Route::get('/seguimientos/alumno/{alumno_Id}', [SeguimientosController::class, 'seguimientosAlumno']);
+        Route::post('/nuevo-seguimiento', [SeguimientosController::class, 'nuevoSeguimiento']);
+        Route::delete('/seguimientos/{seguimiento}', [SeguimientosController::class, 'destroy']);
     }
 );

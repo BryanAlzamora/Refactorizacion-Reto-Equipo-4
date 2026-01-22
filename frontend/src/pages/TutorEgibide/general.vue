@@ -56,6 +56,30 @@ const volverAlumnos = () => {
   router.back();
   router.back();
 };
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const agregarSeguimiento = () => {
+  // Redirige a una ruta de creación de seguimiento, pasando el alumnoId
+  router.push({ name: "tutor_egibide-nuevo-seguimiento-general", query: { alumnoId: alumnoId.toString() } });
+};
+
+const eliminarSeguimiento = async (id: number) => {
+  if (!confirm("¿Estás seguro de que quieres eliminar este seguimiento?")) return;
+
+  try {
+    await seguimientosStore.eliminarSeguimiento(id);
+  } catch (err: any) {
+    console.error(err);
+  }
+};
 </script>
 
 <template>
@@ -97,39 +121,52 @@ const volverAlumnos = () => {
         </ol>
       </nav>
 
-      <!-- Lista de seguimientos -->
-      <div class="card shadow-sm">
-        <div class="card-header">
-          <h3 class="mb-1 text-capitalize">General</h3>
-        </div>
-        <div class="card-body">
-          <ul class="list-group">
-            <li
-              v-if="seguimientosStore.seguimientos.length === 0"
-              class="list-group-item text-muted text-center"
-            >
-              No hay seguimientos aún
-            </li>
-            <li
-              v-else
-              v-for="seguimiento in seguimientosStore.seguimientos"
-              :key="seguimiento.id"
-              class="list-group-item"
-            >
-              <strong>{{ seguimiento.fecha }}</strong> — {{ seguimiento.descripcion }}
-            </li>
-          </ul>
-        </div>
+      <!-- Botón para añadir nuevo seguimiento -->
+      <div class="mb-3 text-end">
+        <button class="btn btn-primary" @click="agregarSeguimiento">
+          <i class="bi bi-plus-circle me-1"></i> Nuevo seguimiento
+        </button>
       </div>
+
+      <!-- Lista de seguimientos -->
+      <div class="card-body">
+        <div v-if="seguimientosStore.seguimientos.length === 0" class="alert alert-info text-center">
+          <i class="bi bi-info-circle me-2"></i> 
+          Aún no hay seguimientos registrados para este alumno.
+        </div>
+
+        <ul v-else class="list-group">
+          <li v-for="seguimiento in seguimientosStore.seguimientos" :key="seguimiento.id" class="list-group-item d-flex flex-column mb-2 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-end mb-1">
+              <small class="text-muted">
+                {{ seguimiento.fecha ? formatDate(seguimiento.fecha) : 'Por definir' }}
+              </small>
+              <div class="d-flex flex-column align-items-end">
+                <div>                
+                  <span class="badge bg-primary me-1">Acción: {{ seguimiento.accion }}</span>
+                  <span class="badge bg-secondary me-0">Via: {{ seguimiento.via || 'General' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-end mb-1">
+              <p class="mb-0">{{ seguimiento.descripcion }}</p>
+              <button class="btn btn-sm btn-outline-danger" @click="eliminarSeguimiento(seguimiento.id)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>  
+          </li>
+        </ul>
+      </div>
+
     </div>
   </div>
 </template>
 
 <style scoped>
-.breadcrumb-item a {
-  color: var(--bs-primary);
-}
-.breadcrumb-item a:hover {
-  text-decoration: underline !important;
-}
+  .breadcrumb-item a {
+    color: var(--bs-primary);
+  }
+  .breadcrumb-item a:hover {
+    text-decoration: underline !important;
+  }
 </style>

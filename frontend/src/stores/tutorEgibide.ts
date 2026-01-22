@@ -1,10 +1,13 @@
 import type { Alumno } from "@/interfaces/Alumno";
+import type { Empresa } from "@/interfaces/Empresa";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useAuthStore } from "./auth";
 
 export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   const alumnosAsignados = ref<Alumno[]>([]);
+  const empresasAsignadas = ref<Empresa[]>([]);
+
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -55,7 +58,36 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       loading.value = false;
     }
   }
+  async function fetchEmpresasAsignadas(tutorId: string) {
+    loading.value = true;
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/tutorEgibide/${tutorId}/empresas`,
+        {
+          headers: {
+            Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+            Accept: "application/json",
+          },
+        }
+      );
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Error desconocido al cargar empresas", "error");
+        return false;
+      }
+
+      empresasAsignadas.value = data as Empresa[];
+      return true;
+    } catch (err) {
+      console.error(err);
+      setMessage("Error de conexión al obtener empresas", "error");
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
   // Guardar horario y periodo de alumno
   async function guardarHorarioAlumno(
     alumnoId: number,
@@ -136,13 +168,14 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
 
   return {
     alumnosAsignados,
+    empresasAsignadas,
     loading,
     error,
     message,
     messageType,
     fetchAlumnosAsignados,
+    fetchEmpresasAsignadas,
     guardarHorarioAlumno,
     setMessage,
-    updateAlumnoEmpresa
   };
 });

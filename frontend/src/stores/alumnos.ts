@@ -12,7 +12,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
   const notaCuaderno = ref<number | null>(null);
   const notasEgibide = ref<NotaEgibide[]>([]);
   const inicio = ref<any | null>(null);
-  const loadingInicio = ref(false);
+  const loadingInicio = ref(false);class="fs-3"
 
   const authStore = useAuthStore();
 
@@ -78,6 +78,25 @@ export const useAlumnosStore = defineStore("alumnos", () => {
 
     const data = await response.json();
     alumnos.value = data as Alumno[];
+  }
+
+  async function eliminarEntrega(id: number) {
+    try {
+      await fetch(`http://localhost:8000/api/entregas/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: authStore.token
+            ? `Bearer ${authStore.token}`
+            : "",
+          Accept: "application/json",
+        },
+      });
+
+      await fetchMisEntregas(); // refresca la lista
+    } catch (e) {
+      console.error("Error al eliminar entrega", e);
+      throw e;
+    }
   }
 
   async function fetchAlumno() {
@@ -277,6 +296,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     inicio,
     loadingInicio,
     notasEgibide,
+    eliminarEntrega,
     fetchInicio,
     subirEntrega,
     fetchMisEntregas,

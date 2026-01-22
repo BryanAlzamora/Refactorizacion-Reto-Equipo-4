@@ -1,72 +1,56 @@
 <script setup lang="ts">
-import type { Alumno } from "@/interfaces/Alumno";
+import type { Empresa } from "@/interfaces/Empresa";
 import { useTutorEgibideStore } from "@/stores/tutorEgibide";
-import { useTutorEmpresaStore } from "@/stores/tutorEmpresa";
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
 const props = defineProps<{
-  tipoTutor: "egibide" | "empresa";
   tutorId: string;
 }>();
 
 const router = useRouter();
 const tutorEgibideStore = useTutorEgibideStore();
-const tutorEmpresaStore = useTutorEmpresaStore();
 
-const alumnosAsignados = ref<Alumno[]>([]);
+const empresasAsignadas = ref<Empresa[]>([]);
 const isLoading = ref(true);
 const searchQuery = ref("");
 
-// Store dinámico según tipo de tutor
-const store = computed(() =>
-  props.tipoTutor === "egibide" ? tutorEgibideStore : tutorEmpresaStore,
-);
-
-// Filtrado de alumnos por búsqueda
-const alumnosFiltrados = computed(() => {
+// Filtrado de empresas por búsqueda
+const empresasFiltradas = computed(() => {
   if (!searchQuery.value.trim()) {
-    return alumnosAsignados.value;
+    return empresasAsignadas.value;
   }
 
   const query = searchQuery.value.toLowerCase();
-  return alumnosAsignados.value.filter(
-    (alumno) =>
-      alumno.nombre.toLowerCase().includes(query) ||
-      (alumno.apellidos && alumno.apellidos.toLowerCase().includes(query)),
+  return empresasAsignadas.value.filter(
+    (empresa) =>
+      empresa.nombre.toLowerCase().includes(query) ||
+      (empresa.cif && empresa.cif.toLowerCase().includes(query)) ||
+      (empresa.email && empresa.email.toLowerCase().includes(query))
   );
 });
 
 onMounted(async () => {
   try {
-    await store.value.fetchAlumnosAsignados(props.tutorId);
-    alumnosAsignados.value = store.value.alumnosAsignados;
+    await tutorEgibideStore.fetchEmpresasAsignadas(props.tutorId);
+    empresasAsignadas.value = tutorEgibideStore.empresasAsignadas;
   } catch (error) {
-    console.error("Error al cargar alumnos:", error);
+    console.error("Error al cargar empresas:", error);
   } finally {
     isLoading.value = false;
   }
 });
 
-const verDetalleAlumno = (alumnoId: number) => {
-  const routeName =
-    props.tipoTutor === "egibide"
-      ? "tutor_egibide-detalle_alumno"
-      : "tutor_empresa-detalle_alumno";
-
+const verDetalleEmpresa = (empresaId: number) => {
   router.push({
-    name: routeName,
-    params: { alumnoId: alumnoId.toString() },
-    query: {
-      tipoTutor: props.tipoTutor,
-      tutorId: props.tutorId,
-    },
+    name: "tutor_egibide-detalle_empresa",
+    params: { empresaId: empresaId.toString() }
   });
 };
 </script>
 
 <template>
-  <div class="alumnos-asignados-container">
+  <div class="empresas-asignadas-container">
     <!-- Header con búsqueda -->
     <div class="mb-3">
       <div class="input-group">
@@ -77,8 +61,8 @@ const verDetalleAlumno = (alumnoId: number) => {
           v-model="searchQuery"
           type="text"
           class="form-control border-start-0"
-          placeholder="Buscar alumno..."
-          :disabled="isLoading || alumnosAsignados.length === 0"
+          placeholder="Buscar empresa..."
+          :disabled="isLoading || empresasAsignadas.length === 0"
         />
       </div>
     </div>
@@ -88,46 +72,46 @@ const verDetalleAlumno = (alumnoId: number) => {
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
-      <p class="mt-3 text-muted">Cargando alumnos asignados...</p>
+      <p class="mt-3 text-muted">Cargando empresas asignadas...</p>
     </div>
 
-    <!-- Sin alumnos asignados -->
+    <!-- Sin empresas asignadas -->
     <div
-      v-else-if="alumnosAsignados.length === 0"
+      v-else-if="empresasAsignadas.length === 0"
       class="alert alert-info d-flex align-items-center"
       role="alert"
     >
       <i class="bi bi-info-circle-fill me-2"></i>
-      <div>No tienes alumnos asignados actualmente.</div>
+      <div>No tienes empresas asignadas actualmente.</div>
     </div>
 
     <!-- Sin resultados de búsqueda -->
     <div
-      v-else-if="alumnosFiltrados.length === 0"
+      v-else-if="empresasFiltradas.length === 0"
       class="alert alert-warning d-flex align-items-center"
       role="alert"
     >
       <i class="bi bi-search me-2"></i>
-      <div>No se encontraron alumnos con "{{ searchQuery }}"</div>
+      <div>No se encontraron empresas con "{{ searchQuery }}"</div>
     </div>
 
-    <!-- Lista de alumnos -->
+    <!-- Lista de empresas -->
     <div v-else class="list-group list-group-flush">
       <div
-        v-for="alumno in alumnosFiltrados"
-        :key="alumno.id"
+        v-for="empresa in empresasFiltradas"
+        :key="empresa.id"
         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 hover-card mb-2"
-        @click="verDetalleAlumno(alumno.id)"
+        @click="verDetalleEmpresa(empresa.id)"
         role="button"
         tabindex="0"
-        @keypress.enter="verDetalleAlumno(alumno.id)"
+        @keypress.enter="verDetalleEmpresa(empresa.id)"
       >
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center flex-grow-1">
           <div class="avatar-circle me-3">
-            <i class="bi bi-person-fill"></i>
+            <i class="bi bi-building"></i>
           </div>
-          <div>
-            <h6 class="mb-0">{{ alumno.nombre }} {{ alumno.apellidos }}</h6>
+          <div class="flex-grow-1">
+            <h6 class="mb-0">{{ empresa.nombre }}</h6>
           </div>
         </div>
 
@@ -138,17 +122,17 @@ const verDetalleAlumno = (alumnoId: number) => {
     </div>
 
     <!-- Contador de resultados -->
-    <div v-if="!isLoading && alumnosAsignados.length > 0" class="mt-3">
+    <div v-if="!isLoading && empresasAsignadas.length > 0" class="mt-3">
       <small class="text-muted">
-        Mostrando {{ alumnosFiltrados.length }} de
-        {{ alumnosAsignados.length }} alumno(s)
+        Mostrando {{ empresasFiltradas.length }} de
+        {{ empresasAsignadas.length }} empresa(s)
       </small>
     </div>
   </div>
 </template>
 
 <style scoped>
-.alumnos-asignados-container {
+.empresas-asignadas-container {
   padding: 0.5rem 0;
 }
 
@@ -177,6 +161,10 @@ const verDetalleAlumno = (alumnoId: number) => {
   color: white;
   border-left-color: #667eea;
   transform: translateX(5px);
+}
+
+.hover-card:hover .text-muted {
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .hover-card:focus {

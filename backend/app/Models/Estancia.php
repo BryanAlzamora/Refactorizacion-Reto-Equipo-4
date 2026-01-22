@@ -39,21 +39,21 @@ class Estancia extends Model {
      * Get the tutor (TutorEgibide) for this estancia
      */
     public function tutor(): BelongsTo {
-        return $this->belongsTo(TutorEgibide::class);
+        return $this->belongsTo(TutorEgibide::class, 'tutor_id', 'id');
     }
 
     /**
      * Get the instructor (TutorEmpresa) for this estancia
      */
     public function instructor(): BelongsTo {
-        return $this->belongsTo(TutorEmpresa::class);
+        return $this->belongsTo(TutorEmpresa::class, 'instructor_id', 'id');
     }
 
     /**
      * Get the empresa that owns this estancia
      */
     public function empresa(): BelongsTo {
-        return $this->belongsTo(Empresas::class);
+        return $this->belongsTo(Empresas::class,'empresa_id');
     }
 
     /**

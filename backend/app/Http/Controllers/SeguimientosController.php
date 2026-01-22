@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Seguimientos;
+use App\Models\Seguimiento;
+use Database\Seeders\SeguimientosSeeder;
 use Illuminate\Http\Request;
 
 class SeguimientosController extends Controller
@@ -12,7 +13,7 @@ class SeguimientosController extends Controller
      */
     public function index()
     {
-        return Seguimientos::all();
+        return Seguimiento::all();
     }
 
     /**
@@ -34,7 +35,7 @@ class SeguimientosController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Seguimientos $seguimientos)
+    public function show(Seguimiento $seguimiento)
     {
         //
     }
@@ -42,7 +43,7 @@ class SeguimientosController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Seguimientos $seguimientos)
+    public function edit(Seguimiento $seguimiento)
     {
         //
     }
@@ -50,7 +51,7 @@ class SeguimientosController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Seguimientos $seguimientos)
+    public function update(Request $request, Seguimiento $seguimiento)
     {
         //
     }
@@ -58,8 +59,58 @@ class SeguimientosController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Seguimientos $seguimientos)
+    public function destroy($id)
     {
-        //
+        $seguimiento = Seguimiento::find($id);
+
+        if (!$seguimiento) {
+            return response()->json(['message' => 'Seguimiento no encontrado'], 404);
+        }
+
+        $seguimiento->delete();
+
+        return response()->json(['message' => 'Seguimiento eliminado correctamente']);
     }
+
+    public function seguimientosAlumno($alumno_Id)
+    {
+        $seguimientos = Seguimiento::with('estancia')
+            ->whereHas('estancia', function ($q) use ($alumno_Id) {
+                $q->where('alumno_id', $alumno_Id);
+            })
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        return response()->json($seguimientos);
+    }
+
+    public function nuevoSeguimiento(Request $request)
+    {
+        $request->validate([
+            'alumno_id' => 'required|integer|exists:alumnos,id',
+            'fecha' => 'required|date',
+            'accion' => 'required|string|max:150',
+            'descripcion' => 'nullable|string',
+            'via' => 'nullable|string|max:50'
+        ]);
+
+        // Buscar la estancia del alumno
+        $estancia = \App\Models\Estancia::where('alumno_id', $request->alumno_id)->first();
+
+        if (!$estancia) {
+            return response()->json(['message' => 'Estancia del alumno no encontrada'], 404);
+        }
+
+        // Crear seguimiento
+        $seguimiento = \App\Models\Seguimiento::create([
+            'accion' => $request->accion,
+            'fecha' => $request->fecha,
+            'descripcion' => $request->descripcion,
+            'via' => $request->via,
+            'estancia_id' => $estancia->id,
+        ]);
+
+        return response()->json(['message' => 'Seguimiento creado', 'seguimiento' => $seguimiento]);
+    }
+
 }

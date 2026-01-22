@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\TutorEmpresa;
+
 
 class Empresas extends Model {
     protected $fillable = [
@@ -17,14 +19,22 @@ class Empresas extends Model {
     /**
      * Get all instructores for this empresa
      */
-    public function instructores(): HasMany {
-        return $this->hasMany(TutorEmpresa::class);
+
+
+    public function instructores()
+    {
+        return $this->belongsToMany(
+            TutorEmpresa::class,
+            'estancias',
+            'empresa_id',
+            'instructor_id'     
+        )->distinct();
     }
 
     /**
      * Get all estancias for this empresa
      */
     public function estancias(): HasMany {
-        return $this->hasMany(Estancia::class);
+        return $this->hasMany(Estancia::class,'empresa_id', 'id');  
     }
 }

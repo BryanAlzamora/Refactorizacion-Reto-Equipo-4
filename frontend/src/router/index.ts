@@ -1,8 +1,10 @@
 import DetallesAlumno from "@/pages/Alumno/detallesAlumno.vue";
+import detallesEmpresa from "@/pages/TutorEgibide/detallesEmpresa.vue";
 import LoginView from "@/pages/Authentication/LoginView.vue";
 import DashboardView from "@/pages/DashboardView.vue";
 import { useAuthStore } from "@/stores/auth";
 import { createRouter, createWebHistory } from "vue-router";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,7 +20,6 @@ const router = createRouter({
       component: DashboardView,
       meta: { requiresAuth: true },
       children: [
-        // Grupo de rutas para Alumnos
         {
           path: "alumno/inicio",
           name: "alumno-inicio",
@@ -67,7 +68,6 @@ const router = createRouter({
           },
           meta: { role: "alumno" },
         },
-        // Grupo de rutas para Tutores
         {
           path: "tutor-egibide/inicio",
           name: "tutor_egibide-inicio",
@@ -133,6 +133,14 @@ const router = createRouter({
           meta: { role: "tutor_egibide" },
         },
         {
+          path: "tutor-egibide/seguimiento-general/:alumnoId/nuevo-seguimiento",
+          name: "tutor_egibide-nuevo-seguimiento-general",
+          components: {
+            main: () => import("@/pages/TutorEgibide/nuevo_general.vue"),
+          },
+          meta: { role: "tutor_egibide" },
+        },
+        {
           path: "tutor-egibide/seguimiento-cuaderno/:alumnoId",
           name: "tutor_egibide-seguimiento-cuaderno",
           components: {
@@ -164,7 +172,22 @@ const router = createRouter({
           },
           meta: { role: "tutor_egibide" },
         },
-        // Grupo de rutas para Empresas
+        {
+          name: "tutor_egibide-empresas_asignadas",
+          path: "tutor-egibide/empresa-asignados",
+          components: {
+            main: () => import("@/pages/TutorEgibide/empresas.vue"),
+          },
+          meta: { role: "tutor_egibide" },
+        },
+        {
+          name: "tutor_egibide-detalle_empresa",
+          path: "tutor-egibide/empresa-asignados/:empresaId",
+          components: {
+            main: () => import("@/pages/TutorEgibide/detallesEmpresa.vue"),
+          },
+          meta: { role: "tutor_egibide" },
+        },
         {
           path: "tutor-empresa/inicio",
           name: "tutor_empresa-inicio",
@@ -213,8 +236,6 @@ const router = createRouter({
           },
           meta: { role: "tutor_empresa" },
         },
-
-        // Grupo de rutas para Admin
         {
           path: "admin/inicio",
           name: "admin-inicio",

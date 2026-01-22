@@ -130,7 +130,7 @@ function formatDate(fecha: string) {
       <!-- Tabla de entregas -->
       <div class="card shadow-sm mb-4">
         <div class="card-header">
-          <h3 class="mb-1">Cuaderno</h3>
+          <h3 class="mb-1">Entregas</h3>
         </div>
         <div class="card-body p-0">
           <div v-if="alumnosStore.loadingEntregas" class="p-3">
@@ -142,18 +142,23 @@ function formatDate(fecha: string) {
             Todavía no hay entregas.
           </div>
 
-          <table v-else class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr>
-                <th style="width: 160px;">Archivo</th>
-                <th style="width: 160px;">Fecha</th>
-                <th style="width: 220px;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="e in alumnosStore.entregas" :key="e.id">
-                <td class="text-truncate" style="max-width: 500px;">{{ e.archivo }}</td>
-                <td>{{ formatDate(e.fecha) }}</td>
+        <table v-else class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 160px;">Archivo</th>
+              <th style="width: 160px;">Fecha</th>
+              <th style="width: 220px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(e, idx) in alumnosStore.entregas" :key="e.id">
+              <td>
+                <div class="fw-semibold">
+                  Entrega {{ alumnosStore.entregas.length - idx }}
+                </div>
+              </td>
+
+              <td>{{ formatDate(e.fecha) }}</td>
                 <td>
                   <button class="btn btn-sm btn-outline-primary" @click="descargar(e.id)">
                     Descargar
