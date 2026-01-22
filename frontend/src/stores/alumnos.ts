@@ -79,6 +79,25 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     alumnos.value = data as Alumno[];
   }
 
+  async function eliminarEntrega(id: number) {
+    try {
+      await fetch(`http://localhost:8000/api/entregas/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: authStore.token
+            ? `Bearer ${authStore.token}`
+            : "",
+          Accept: "application/json",
+        },
+      });
+
+      await fetchMisEntregas(); // refresca la lista
+    } catch (e) {
+      console.error("Error al eliminar entrega", e);
+      throw e;
+    }
+  }
+
   async function fetchAlumno() {
     const response = await fetch("http://localhost:8000/api/me/alumno", {
       method: "GET",
@@ -251,6 +270,7 @@ async function fetchEntregasAlumno(alumnoId: number) {
     loadingEntregas,
     inicio,
     loadingInicio,
+    eliminarEntrega,
     fetchInicio,
     subirEntrega,
     fetchMisEntregas,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Entrega;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -68,6 +69,20 @@ class EntregaController extends Controller
 
         return response()->download($absolutePath, basename($path));
     }   
+
+    public function destroy($id){
+        $entrega = DB::table('entregas')->where('id', $id)->first();
+
+        if (!$entrega) {
+            return response()->json(['message' => 'Entrega no encontrada'], 404);
+        }
+        if ($entrega->archivo && Storage::disk('public')->exists($entrega->archivo)) {
+            Storage::disk('public')->delete($entrega->archivo);
+        }
+        DB::table('entregas')->where('id', $id)->delete();
+
+        return response()->json(['message' => 'Entrega eliminada correctamente']);
+    }
 
     public function store(Request $request){
         $user = $request->user();

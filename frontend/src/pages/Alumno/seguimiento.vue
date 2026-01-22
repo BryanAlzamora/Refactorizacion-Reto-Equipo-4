@@ -7,16 +7,48 @@ const authStore = useAuthStore();
 const alumnosStore = useAlumnosStore();
 const file = ref<File | null>(null);
 const subiendo = ref(false);
-
-const entregaPreviewId = ref<number | null>(null);
+  
+const fileError = ref<string | null>(null);
 
 onMounted(() => {
   alumnosStore.fetchMisEntregas();
 });
 
+async function eliminar(id: number) {
+  if (!confirm("¿Seguro que quieres eliminar esta entrega?")) return;
+
+  try {
+    await alumnosStore.eliminarEntrega(id);
+  } catch {
+    alert("No se pudo eliminar la entrega");
+  }
+}
+
 function onFile(e: Event) {
   const input = e.target as HTMLInputElement;
-  file.value = input.files?.[0] ?? null;
+  const f = input.files?.[0] ?? null;
+
+  fileError.value = null;
+  file.value = null;
+
+  if (!f) return;
+
+  const isPdf =
+    f.type === "application/pdf" ||
+    f.name.toLowerCase().endsWith(".pdf");
+
+  if (!isPdf) {
+    input.value = "";
+    fileError.value = "Solo se admite PDF.";
+    return;
+  }
+
+  file.value = f;
+}
+
+function nombreEntrega(idx: number, fecha: string) {
+  const numero = alumnosStore.entregas.length - idx;
+  return `Entrega ${numero} · ${formatDate(fecha)}`;
 }
 
 async function subir() {
@@ -37,7 +69,11 @@ function resetForm() {
 }
 
 function formatDate(fecha: string) {
-  const [y, m, d] = fecha.split("-");
+  const onlyDate = fecha.includes("T") ? (fecha.split("T")[0] ?? fecha) : fecha;
+
+  const [y, m, d] = onlyDate.split("-");
+  if (!y || !m || !d) return fecha;
+
   return `${d}/${m}/${y}`;
 }
 
@@ -111,9 +147,11 @@ function descargar(id: number) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="e in alumnosStore.entregas" :key="e.id">
-              <td class="text-truncate" style="max-width: 500px;">
-                {{ e.archivo }}
+            <tr v-for="(e, idx) in alumnosStore.entregas" :key="e.id">
+              <td class="pl-5">
+                <div class="fw-semibold">
+                  {{ nombreEntrega(idx, e.fecha) }}
+                </div>
               </td>
               <td>{{ formatDate(e.fecha) }}</td>
 
@@ -125,6 +163,13 @@ function descargar(id: number) {
                     @click="descargar(e.id)"
                   >
                     Descargar
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    @click="eliminar(e.id)"
+                  >
+                    Eliminar
                   </button>
                 </div>
               </td>
@@ -153,13 +198,13 @@ function descargar(id: number) {
               <input
                 type="file"
                 class="form-control"
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept="application/pdf,.pdf"
                 required
                 @change="onFile"
                 :disabled="subiendo"
               />
               <div class="form-text">
-                PDF o imagen.
+                Solo se admite PDF.
               </div>
             </div>
 
@@ -183,25 +228,6 @@ function descargar(id: number) {
             </div>
           </form>
 
-        </div>
-      </div>
-    </div>
-
-    <div class="modal fade" id="modalPreview" tabindex="-1">
-      <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Previsualización</h5>
-            <button class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-
-          <div class="modal-body" style="height: 75vh;">
-            <iframe
-              v-if="entregaPreviewId"
-              :src="urlArchivo(entregaPreviewId)"
-              style="width: 100%; height: 100%; border: 0;"
-            ></iframe>
-          </div>
         </div>
       </div>
     </div>
