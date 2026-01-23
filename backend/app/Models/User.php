@@ -51,6 +51,6 @@ class User extends Authenticatable {
      * Get the instructor associated with this user
      */
     public function instructor(): HasOne {
-        return $this->hasOne(TutorEmpresa::class);
+        return $this->hasOne(TutorEmpresa::class,'user_id', 'id');
     }
 }

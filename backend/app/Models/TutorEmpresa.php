@@ -25,7 +25,7 @@ class TutorEmpresa extends Model {
     }
 
     public function estancias() {
-        return $this->hasMany(Estancia::class, 'instructor_id');
+        return $this->hasMany(Estancia::class,'instructor_id', 'id');
     }
 
     public function alumnos() {

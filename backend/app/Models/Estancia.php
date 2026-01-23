@@ -46,7 +46,7 @@ class Estancia extends Model {
      * Get the instructor (TutorEmpresa) for this estancia
      */
     public function instructor(): BelongsTo {
-        return $this->belongsTo(TutorEmpresa::class, 'instructor_id', 'id');
+        return $this->belongsTo(TutorEmpresa::class,'instructor_id', 'id');
     }
 
     /**
