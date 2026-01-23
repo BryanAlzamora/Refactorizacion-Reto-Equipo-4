@@ -93,6 +93,42 @@ const notasEgibidePorAsignatura = computed(() => {
   return map;
 });
 
+const notaFinalPorAsignatura = computed<Record<number, number>>(() => {
+  const map: Record<number, number> = {};
+
+  asignaturas.value.forEach((asignatura) => {
+    const egibide = Number(notasEgibidePorAsignatura.value[asignatura.id]);
+    const tecnica = notasTecnicasPorAsignatura.value[asignatura.id];
+    const transversal = notaTransversal.value;
+    const cuaderno = notaCuaderno.value ?? 0;
+
+    if (isNaN(egibide)) {
+      map[asignatura.id] = NaN;
+    }
+
+    let notaEmpresa: number;
+
+    if(tecnica != null) {
+      notaEmpresa = tecnica * 0.6 + transversal * 0.2 + cuaderno * 0.2;
+    } else {
+      notaEmpresa = transversal * 0.8 + cuaderno * 0.2;
+    }
+
+    const notaFinal = egibide * 0.8 + notaEmpresa * 0.2;
+
+    map[asignatura.id] = Math.round(notaFinal * 100) / 100;
+  });
+
+  return map;
+});
+
+const getNotaFinal = (asignaturaId: number) => {
+  const nota = notaFinalPorAsignatura.value[asignaturaId];
+  return isNaN(nota ?? NaN) ? "-" : nota;
+};
+
+
+
 const volver = () => {
   router.back();
 };
@@ -192,14 +228,14 @@ const volverAlumnos = () => {
                 <td class="fw-bold">{{ asignatura.codigo_asignatura }}</td>
                 <td>{{ notasEgibidePorAsignatura[asignatura.id] ?? "-" }}</td>
                 <td>{{ notasTecnicasPorAsignatura[asignatura.id] ?? "-" }}</td>
-                <td v-if="index === 0" :rowspan="asignaturas.length" class="fs-3">
+                <td v-if="index === 0" :rowspan="asignaturas.length">
                   {{ notaTransversal }}
                 </td>
-                <td v-if="index === 0" :rowspan="asignaturas.length" class="fs-3">
+                <td v-if="index === 0" :rowspan="asignaturas.length">
                   {{ notaCuaderno }}
                 </td>
+                <td>{{ getNotaFinal(asignatura.id) }}</td>
 
-                <td></td> <!-- Nota final -->
               </tr>
             </tbody>
           </table>
