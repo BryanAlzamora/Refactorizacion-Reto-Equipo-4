@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { onMounted } from 'vue';
   import { useCiclosStore } from '@/stores/ciclos';
+  import CiclosTodos from "@/components/CiclosTodos.vue";
 
   const ciclosStore = useCiclosStore();
 
@@ -12,11 +13,8 @@
 <template>
   <div>
     <h2>Lista de Ciclos</h2>
-    <ul class="list-group">
-      <li class="list-group-item" v-for="ciclo in ciclosStore.ciclos" :key="ciclo.id">
-        {{ ciclo.nombre }}
-      </li>
-    </ul>
+    <hr />
+    <CiclosTodos />
   </div>
 </template>
 

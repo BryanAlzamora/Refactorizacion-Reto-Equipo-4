@@ -33,18 +33,19 @@ export const useCompetenciasStore = defineStore("competencias", () => {
   async function fetchCompetencias() {
     const response = await fetch("http://localhost:8000/api/competencias", {
       headers: authStore.token
-        ? {
-            Authorization: `Bearer ${authStore.token}`,
-            Accept: "application/json",
-          }
-        : {
-            Accept: "application/json",
-          },
+        ? { Authorization: `Bearer ${authStore.token}`, Accept: "application/json" }
+        : { Accept: "application/json" },
     });
 
-    const data = await response.json();
-    competenciasTransversales.value = data as Competencia[];
+    if (!response.ok) {
+      setMessage("Error al cargar competencias", "error");
+      return;
+    }
+
+    const data = (await response.json()) as Competencia[];
+    competencias.value = data; // ✅ Guardamos todas las competencias aquí
   }
+
 
   async function fetchCompetenciasTecnicasByAlumno(alumno_id: number) {
     const response = await fetch(

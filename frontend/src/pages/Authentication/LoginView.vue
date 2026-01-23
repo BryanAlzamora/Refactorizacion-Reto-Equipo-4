@@ -20,13 +20,13 @@ function login() {
     messageType="error"
   />
   <div class="min-vh-100 d-flex justify-content-center align-items-center">
-    <div class="card shadow p-3 island" style="width: 25rem">
+    <div class="card shadow p-3 island" style="width: 25rem; height: 30rem;">
       <img
         src="@/assets/images/logotipo.png"
-        class="card-img-top"
+        class="card-img-top mb-5 mt-4"
         alt="Egibide Logo"
       />
-      <div class="card-body">
+      <div class="card-body mx-3">
         <h5 class="card-title text-center mb-3">Iniciar Sesión</h5>
 
         <form @submit.prevent="login">

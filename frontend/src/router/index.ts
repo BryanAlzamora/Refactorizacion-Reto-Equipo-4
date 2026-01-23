@@ -324,6 +324,30 @@ const router = createRouter({
           },
           meta: { role: "admin" },
         },
+        {
+          path: "admin/alumnos/:alumnoId",
+          name: "admin-detalle_alumno",
+          components: {
+            main: () => import("@/pages/Alumno/detallesAlumno.vue"),
+          },
+          meta: { role: "admin" },
+        },
+        {
+          path: "admin/empresas/:empresaId",
+          name: "admin-detalle_empresa",
+          components: {
+            main: () => import("@/pages/TutorEgibide/detallesEmpresa.vue"),
+          },
+          meta: { role: "admin" },
+        },
+        {
+          path: "admin/ciclos/:cicloId",
+          name: "admin-detalle_ciclo",
+          components: {
+            main: () => import("@/pages/Admin/detallesCiclo.vue"),
+          },
+          meta: { role: "admin" },
+        },
       ],
     },
   ],

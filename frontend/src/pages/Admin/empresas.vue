@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { onMounted } from 'vue';
   import { useEmpresasStore } from '@/stores/empresas';
+  import EmpresasTodas from "@/components/EmpresasTodas.vue";
 
   const empresasStore = useEmpresasStore();
 
@@ -12,11 +13,8 @@
 <template>
   <div>
     <h2>Lista de Empresas</h2>
-    <ul class="list-group">
-      <li class="list-group-item" v-for="empresa in empresasStore.empresas" :key="empresa.id">
-        {{ empresa.nombre }}
-      </li>
-    </ul>
+    <hr />
+    <EmpresasTodas />
   </div>
 </template>
 
