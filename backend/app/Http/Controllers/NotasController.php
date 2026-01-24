@@ -24,8 +24,8 @@ class NotasController extends Controller {
         $notas = $calcularNotas->calcularNotasTransversales($alumnoId);
 
         return response()->json([
-            'estancia_id' => $notas['estancia_id'],
-            'nota_media' => $notas['nota_media'],
+            'estancia_id' => $notas['estancia_id'] ?? null,
+            'nota_media' => $notas['nota_media'] ?? null,
         ]);
     }
 
@@ -66,7 +66,7 @@ class NotasController extends Controller {
 
         $notaCuaderno = NotaCuaderno::whereHas('cuadernoPracticas', function ($query) use ($estancia) {
             $query->where('estancia_id', $estancia->id);
-        })->firstOrFail('nota');
+        })->first();
 
         return response()->json($notaCuaderno);
     }
@@ -77,24 +77,24 @@ class NotasController extends Controller {
             'nota' => ['required']
         ]);
 
-        $alumnoId = $validated['alumno_id'];
+        $estancia = Estancia::where('alumno_id', $validated['alumno_id'])->firstOrFail();
 
-        $estancia = Estancia::where('alumno_id', $alumnoId)->firstOrFail();
+        $cuaderno = CuadernoPracticas::where('estancia_id', $estancia->id)->first();
 
-        $cuaderno = CuadernoPracticas::where('estancia_id', $estancia->id)->firstOrFail();
+        if (!$cuaderno) {
+            return response()->json([
+                'message' => 'El alumno no ha subido su cuaderno de prácticas aún'
+            ], 422);
+        }
 
-        NotaCuaderno::UpdateOrCreate(
-            [
-                'cuaderno_practicas_id' => $cuaderno->id,
-            ],
-            [
-                'nota' => $validated['nota'],
-            ]
+        NotaCuaderno::updateOrCreate(
+            ['cuaderno_practicas_id' => $cuaderno->id],
+            ['nota' => $validated['nota']]
         );
 
         return response()->json([
             'success' => true,
-            'message' => 'Nota egibide agregada correctamente'
+            'message' => 'Nota del cuaderno guardada correctamente'
         ], 201);
     }
 }
