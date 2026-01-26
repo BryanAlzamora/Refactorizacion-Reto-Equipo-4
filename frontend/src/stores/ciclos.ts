@@ -5,6 +5,8 @@ import { useAuthStore } from "./auth";
 import type { Curso } from "@/interfaces/Curso";
 import type { TutorEgibide } from "@/interfaces/TutorEgibide";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useCiclosStore = defineStore("ciclos", () => {
   const ciclos = ref<Ciclo[]>([]);
   const cursos = ref<Curso[]>([]);
@@ -27,7 +29,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
 
   // Obtener todos los ciclos
   async function fetchCiclos() {
-    const response = await fetch("http://localhost:8000/api/ciclos", {
+    const response = await fetch(`${baseURL}/api/ciclos`, {
       method: "GET",
       headers: authStore.token
         ? {
@@ -46,7 +48,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
   // Obtener los cursos por ciclo
   async function fetchCursosByCiclos(ciclo_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/ciclo/${ciclo_id}/cursos`,
+      `${baseURL}/api/ciclo/${ciclo_id}/cursos`,
       {
         method: "GET",
         headers: {
@@ -63,7 +65,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
   // Obtener los tutores por ciclo
   async function fetchTutoresByCiclos(ciclo_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/ciclo/${ciclo_id}/tutores`,
+      `${baseURL}/api/ciclo/${ciclo_id}/tutores`,
       {
         method: "GET",
         headers: {
@@ -78,7 +80,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
   }
 
   async function createCiclo(nombre: string, familia_profesional_id: number) {
-    const response = await fetch("http://localhost:8000/api/ciclos", {
+    const response = await fetch(`${baseURL}/api/ciclos`, {
       method: "POST",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -109,7 +111,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
   }
 
   async function uploadCSV(formData: FormData) {
-    const response = await fetch("http://localhost:8000/api/ciclos/importar", {
+    const response = await fetch(`${baseURL}/api/ciclos/importar`, {
       method: "POST",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -134,7 +136,7 @@ export const useCiclosStore = defineStore("ciclos", () => {
   }
 
   async function downloadPlantillaCSV() {
-    const response = await fetch("http://localhost:8000/api/ciclos/plantilla", {
+    const response = await fetch(`${baseURL}/api/ciclos/plantilla`, {
       method: "GET",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",

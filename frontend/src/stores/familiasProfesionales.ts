@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { useAuthStore } from "./auth";
 import type { FamiliaProfesional } from "@/interfaces/FamiliaProfesional";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useFamiliaProfesionalesStore = defineStore(
   "familiasProfesionales",
   () => {
@@ -11,7 +13,7 @@ export const useFamiliaProfesionalesStore = defineStore(
 
     async function fetchFamiliasProfesionales() {
       const response = await fetch(
-        "http://localhost:8000/api/familiasProfesionales",
+        `${baseURL}/api/familiasProfesionales`,
         {
           headers: authStore.token
             ? {

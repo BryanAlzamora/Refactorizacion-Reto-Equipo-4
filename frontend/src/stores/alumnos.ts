@@ -5,6 +5,8 @@ import { ref } from "vue";
 import type { Asignatura } from "@/interfaces/Asignatura";
 import type { NotaCuaderno, NotaEgibide } from "@/interfaces/Notas";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useAlumnosStore = defineStore("alumnos", () => {
   const alumnos = ref<Alumno[]>([]);
   const alumno = ref<Alumno[]>([]);
@@ -29,7 +31,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
   async function fetchMisEntregas() {
     loadingEntregas.value = true;
     try {
-      const response = await fetch("http://localhost:8000/api/entregas/mias", {
+      const response = await fetch(`${baseURL}/api/entregas/mias`, {
         headers: {
           Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
           Accept: "application/json",
@@ -47,7 +49,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     const fd = new FormData();
     fd.append("archivo", file);
 
-    const response = await fetch("http://localhost:8000/api/entregas", {
+    const response = await fetch(`${baseURL}/api/entregas`, {
       method: "POST",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -73,7 +75,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
   }
 
   async function fetchAlumnos() {
-    const response = await fetch("http://localhost:8000/api/alumnos", {
+    const response = await fetch(`${baseURL}/api/alumnos`, {
       method: "GET",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -86,22 +88,22 @@ export const useAlumnosStore = defineStore("alumnos", () => {
   }
 
   async function fetchAlumnoDetalleAdmin(alumnoId: number) {
-  loadingAlumnoDetalle.value = true;
-  errorAlumnoDetalle.value = null;
+    loadingAlumnoDetalle.value = true;
+    errorAlumnoDetalle.value = null;
 
-  try {
-    const response = await fetch(
-      `http://localhost:8000/api/admin/alumnos/${alumnoId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
-          Accept: "application/json",
+    try {
+      const response = await fetch(
+        `${baseURL}/api/admin/alumnos/${alumnoId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+            Accept: "application/json",
+          },
         },
-      },
-    );
+      );
 
-    const data = await response.json().catch(() => null);
+      const data = await response.json().catch(() => null);
 
     if (!response.ok) {
       alumnoDetalle.value = null;
@@ -124,7 +126,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
 
   async function eliminarEntrega(id: number) {
     try {
-      await fetch(`http://localhost:8000/api/entregas/${id}`, {
+      await fetch(`${baseURL}/api/entregas/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -140,7 +142,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
   }
 
   async function fetchAlumno() {
-    const response = await fetch("http://localhost:8000/api/me/alumno", {
+    const response = await fetch(`${baseURL}/api/me/alumno`, {
       method: "GET",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -167,7 +169,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     loadingInicio.value = true;
 
     try {
-      const response = await fetch("http://localhost:8000/api/me/inicio", {
+      const response = await fetch(`${baseURL}/api/me/inicio`, {
         method: "GET",
         headers: {
           Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -201,7 +203,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     curso: number,
     tutor: number,
   ) {
-    const response = await fetch("http://localhost:8000/api/alumnos", {
+    const response = await fetch(`${baseURL}/api/alumnos`, {
       method: "POST",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -234,7 +236,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
 
   async function getAsignaturasAlumno(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/alumnos/${alumno_id}/asignaturas`,
+      `${baseURL}/api/alumnos/${alumno_id}/asignaturas`,
       {
         method: "GET",
         headers: {
@@ -264,7 +266,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     asignatura_id: number,
   ) {
     const response = await fetch(
-      `http://localhost:8000/api/notas/alumno/egibide/guardar`,
+      `${baseURL}/api/notas/alumno/egibide/guardar`,
       {
         method: "POST",
         headers: {
@@ -295,7 +297,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
 
   async function getNotasEgibideByAlumno(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/notas/alumno/${alumno_id}/egibide`,
+      `${baseURL}/api/notas/alumno/${alumno_id}/egibide`,
       {
         method: "GET",
         headers: {
@@ -321,7 +323,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
 
   async function guardarNotaCuadernoByAlumno(alumno_id: number, nota: number) {
     const response = await fetch(
-      `http://localhost:8000/api/notas/alumno/cuaderno/guardar`,
+      `${baseURL}/api/notas/alumno/cuaderno/guardar`,
       {
         method: "POST",
         headers: {
@@ -352,7 +354,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
 
   async function getNotaCuadernoByAlumno(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/notas/alumno/${alumno_id}/cuaderno`,
+      `${baseURL}/api/notas/alumno/${alumno_id}/cuaderno`,
       {
         method: "GET",
         headers: {
@@ -380,7 +382,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
     loadingEntregas.value = true;
     try {
       const response = await fetch(
-        `http://localhost:8000/api/alumnos/${alumnoId}/entregas`,
+        `${baseURL}/api/alumnos/${alumnoId}/entregas`,
         {
           headers: {
             Authorization: authStore.token ? `Bearer ${authStore.token}` : "",

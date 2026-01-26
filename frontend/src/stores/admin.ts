@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
+const baseURL = import.meta.env.VITE_baseURL_URL;
+
 // ---- Tipos ----
 export interface Empresa {
   id: number;
@@ -29,7 +31,6 @@ export interface Alumno {
 
 export type AdminInicio = unknown;
 
-const API_BASE = "http://localhost:8000/api";
 
 export const useAdminStore = defineStore("admin", () => {
   const authStore = useAuthStore();
@@ -91,7 +92,7 @@ export const useAdminStore = defineStore("admin", () => {
     errorInicio.value = null;
 
     try {
-      const response = await fetch(`${API_BASE}/admin/inicio`, {
+      const response = await fetch(`${baseURL}/admin/inicio`, {
         method: "GET",
         headers: authHeaders(),
       });
@@ -124,7 +125,7 @@ export const useAdminStore = defineStore("admin", () => {
     errorAlumnos.value = null;
 
     try {
-      const response = await fetch(`${API_BASE}/admin/alumnos`, {
+      const response = await fetch(`${baseURL}/admin/alumnos`, {
         method: "GET",
         headers: authHeaders(),
       });
@@ -157,7 +158,7 @@ export const useAdminStore = defineStore("admin", () => {
     errorAlumnoDetalle.value = null;
 
     try {
-      const response = await fetch(`${API_BASE}/admin/alumnos/${alumnoId}`, {
+      const response = await fetch(`${baseURL}/admin/alumnos/${alumnoId}`, {
         method: "GET",
         headers: authHeaders(),
       });

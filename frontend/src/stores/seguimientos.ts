@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { useAuthStore } from "./auth";
 import type { Seguimiento } from "@/interfaces/Seguimiento";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useSeguimientosStore = defineStore("seguimientos", () => {
   const seguimientos = ref<Seguimiento[]>([]);
   const loading = ref(false);
@@ -28,7 +30,7 @@ export const useSeguimientosStore = defineStore("seguimientos", () => {
     loading.value = true;
     error.value = null;
     try {
-      const res = await fetch(`http://localhost:8000/api/seguimientos/alumno/${alumnoId}`, {
+      const res = await fetch(`${baseURL}/api/seguimientos/alumno/${alumnoId}`, {
         headers: authStore.token
           ? { Authorization: `Bearer ${authStore.token}`, Accept: "application/json" }
           : { Accept: "application/json" },
@@ -71,7 +73,7 @@ export const useSeguimientosStore = defineStore("seguimientos", () => {
     error.value = null;
 
     try {
-      const res = await fetch("http://localhost:8000/api/nuevo-seguimiento", {
+      const res = await fetch(`${baseURL}/api/nuevo-seguimiento`, {
         method: "POST",
         headers: authStore.token
           ? { "Content-Type": "application/json", Authorization: `Bearer ${authStore.token}` }
@@ -110,7 +112,7 @@ export const useSeguimientosStore = defineStore("seguimientos", () => {
     error.value = null;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/seguimientos/${id}`, {
+      const res = await fetch(`${baseURL}/api/seguimientos/${id}`, {
         method: "DELETE",
         headers: authStore.token
           ? { Authorization: `Bearer ${authStore.token}` }

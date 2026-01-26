@@ -11,6 +11,8 @@ import type {
   NotaCompetenciaTransversal,
 } from "@/interfaces/Notas";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useCompetenciasStore = defineStore("competencias", () => {
   const competencias = ref<Competencia[]>([]);
   const competenciasAsignadas = ref<CompetenciaAsignada[]>([]);
@@ -31,7 +33,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
   }
 
   async function fetchCompetencias() {
-    const response = await fetch("http://localhost:8000/api/competencias", {
+    const response = await fetch(`${baseURL}/api/competencias`, {
       headers: authStore.token
         ? { Authorization: `Bearer ${authStore.token}`, Accept: "application/json" }
         : { Accept: "application/json" },
@@ -49,7 +51,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
 
   async function fetchCompetenciasTecnicasByAlumno(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/competenciasTecnicas/alumno/${alumno_id}`,
+      `${baseURL}/api/competenciasTecnicas/alumno/${alumno_id}`,
       {
         method: "GET",
         headers: {
@@ -65,7 +67,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
 
   async function fetchCompetenciasTecnicasAsignadasByAlumno(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/competenciasTecnicas/alumno/${alumno_id}/asignadas`,
+      `${baseURL}/api/competenciasTecnicas/alumno/${alumno_id}/asignadas`,
       {
         method: "GET",
         headers: {
@@ -81,7 +83,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
 
   async function fetchCompetenciasTransversalesByAlumno(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/competenciasTransversales/alumno/${alumno_id}`,
+      `${baseURL}/api/competenciasTransversales/alumno/${alumno_id}`,
       {
         method: "GET",
         headers: {
@@ -100,7 +102,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
     descripcion: string,
   ) {
     const response = await fetch(
-      "http://localhost:8000/api/competencia/tecnica",
+      `${baseURL}/api/competencia/tecnica`,
       {
         method: "POST",
         headers: {
@@ -132,7 +134,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
     descripcion: string,
   ) {
     const response = await fetch(
-      "http://localhost:8000/api/competencia/transversal",
+      `${baseURL}/api/competencia/transversal`,
       {
         method: "POST",
         headers: {
@@ -163,7 +165,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
     competencias: number[],
   ) {
     const response = await fetch(
-      "http://localhost:8000/api/competenciasTecnicas/asignar",
+      `${baseURL}/api/competenciasTecnicas/asignar`,
       {
         method: "POST",
         headers: {
@@ -197,7 +199,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
     competencias: CompetenciaCalificada[],
   ) {
     const response = await fetch(
-      "http://localhost:8000/api/competenciasTecnicas/calificar",
+      `${baseURL}/api/competenciasTecnicas/calificar`,
       {
         method: "POST",
         headers: {
@@ -231,7 +233,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
     competencias: CompetenciaCalificada[],
   ) {
     const response = await fetch(
-      "http://localhost:8000/api/competenciasTransversales/calificar",
+      `${baseURL}/api/competenciasTransversales/calificar`,
       {
         method: "POST",
         headers: {
@@ -262,7 +264,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
 
   async function getCalificacionesCompetenciasTecnicas(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/competenciasTecnicas/calificaciones/${alumno_id}`,
+      `${baseURL}/api/competenciasTecnicas/calificaciones/${alumno_id}`,
       {
         method: "GET",
         headers: {
@@ -286,7 +288,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
 
   async function getCalificacionesCompetenciasTransversales(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/competenciasTransversales/calificaciones/${alumno_id}`,
+      `${baseURL}/api/competenciasTransversales/calificaciones/${alumno_id}`,
       {
         method: "GET",
         headers: {
@@ -312,7 +314,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
     alumno_id: number,
   ): Promise<CalculoNotasTecnicasResponse> {
     const response = await fetch(
-      `http://localhost:8000/api/notas/alumno/${alumno_id}/tecnicas`,
+      `${baseURL}/api/notas/alumno/${alumno_id}/tecnicas`,
       {
         method: "GET",
         headers: {
@@ -336,7 +338,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
 
   async function getNotaTransversalByAlumno(alumno_id: number) {
     const response = await fetch(
-      `http://localhost:8000/api/notas/alumno/${alumno_id}/transversal`,
+      `${baseURL}/api/notas/alumno/${alumno_id}/transversal`,
       {
         method: "GET",
         headers: {

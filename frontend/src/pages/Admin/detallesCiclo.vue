@@ -11,6 +11,8 @@ const router = useRouter();
 const authStore = useAuthStore();
 const familiasStore = useFamiliaProfesionalesStore();
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 const ciclo = ref<Ciclo | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
@@ -34,7 +36,7 @@ const cargarDetalleCiclo = async () => {
   try {
     // Cargar detalle del ciclo
     const response = await fetch(
-      `http://localhost:8000/api/admin/ciclos/${cicloId}`,
+      `${baseURL}/api/admin/ciclos/${cicloId}`,
       {
         headers: {
           Authorization: authStore.token ? `Bearer ${authStore.token}` : "",

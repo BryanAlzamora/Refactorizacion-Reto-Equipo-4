@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useAuthStore } from "./auth";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useTutorEmpresaStore = defineStore("tutorEmpresa", () => {
   const alumnosAsignados = ref([]);
 
@@ -27,7 +29,7 @@ export const useTutorEmpresaStore = defineStore("tutorEmpresa", () => {
     loadingInicio.value = true;
 
     try {
-      const response = await fetch("http://localhost:8000/api/tutorEmpresa/inicio", {
+      const response = await fetch(`${baseURL}/api/tutorEmpresa/inicio`, {
         method: "GET",
         headers: {
           Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -52,7 +54,7 @@ export const useTutorEmpresaStore = defineStore("tutorEmpresa", () => {
 
   async function fetchAlumnosAsignados(tutorId: string) {
     const response = await fetch(
-      `http://localhost:8000/api/tutorEmpresa/${tutorId}/alumnos`,
+      `${baseURL}/api/tutorEmpresa/${tutorId}/alumnos`,
       {
         method: "GET",
         headers: {

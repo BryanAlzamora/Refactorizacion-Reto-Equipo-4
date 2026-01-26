@@ -4,6 +4,8 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useAuthStore } from "./auth";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   const alumnosAsignados = ref<Alumno[]>([]);
   const empresasAsignadas = ref<Empresa[]>([]);
@@ -35,7 +37,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     loading.value = true;
     try {
       const response = await fetch(
-        `http://localhost:8000/api/tutorEgibide/${tutorId}/alumnos`,
+        `${baseURL}/api/tutorEgibide/${tutorId}/alumnos`,
         {
           headers: {
             Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -65,7 +67,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     loading.value = true;
     try {
       const response = await fetch(
-        `http://localhost:8000/api/tutorEgibide/${tutorId}/empresas`,
+        `${baseURL}/api/tutorEgibide/${tutorId}/empresas`,
         {
           headers: {
             Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -96,7 +98,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     loadingInicio.value = true;
 
     try {
-      const response = await fetch("http://localhost:8000/api/tutorEgibide/inicio", {
+      const response = await fetch(`${baseURL}/api/tutorEgibide/inicio`, {
         method: "GET",
         headers: {
           Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -139,7 +141,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
         horas_totales: horasTotales,
       };
 
-      const response = await fetch("http://localhost:8000/api/horasperiodo", {
+      const response = await fetch(`${baseURL}/api/horasperiodo`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

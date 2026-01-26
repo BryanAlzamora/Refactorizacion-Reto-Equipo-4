@@ -4,13 +4,15 @@ import { ref } from "vue";
 import { useAuthStore } from "./auth";
 import { useTutorEgibideStore } from "./tutorEgibide";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 export const useEmpresasStore = defineStore("empresas", () => {
   const empresas = ref<Empresa[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
   const authStore = useAuthStore();
-  
+
   const message = ref<string | null>(null);
   const messageType = ref<"success" | "error">("success");
 
@@ -25,7 +27,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
   }
 
   async function fetchEmpresas() {
-    const response = await fetch("http://localhost:8000/api/empresas", {
+    const response = await fetch(`${baseURL}/api/empresas`, {
       headers: authStore.token
         ? {
             Authorization: `Bearer ${authStore.token}`,
@@ -41,7 +43,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
   }
 
   async function fetchMiEmpresa() {
-      const response = await fetch("http://localhost:8000/api/me/empresa", {
+      const response = await fetch(`${baseURL}/api/me/empresa`, {
         headers: authStore.token
           ? {
               Authorization: `Bearer ${authStore.token}`,
@@ -69,7 +71,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
     email: string,
     direccion: string,
   ) {
-    const response = await fetch("http://localhost:8000/api/empresas", {
+    const response = await fetch(`${baseURL}/api/empresas`, {
       method: "POST",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -95,7 +97,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
 
   async function asignarEmpresa(alumno_id: number, empresa_id: number) {
     const response = await fetch(
-      "http://localhost:8000/api/empresas/asignar",
+      `${baseURL}/api/empresas/asignar`,
       {
         method: "POST",
         headers: {
@@ -123,7 +125,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
     );
 
     const tutorEgibideStore = useTutorEgibideStore();
-    
+
     // Actualiza el alumno localmente para la UI sin recargar
     tutorEgibideStore.updateAlumnoEmpresa(alumno_id, empresa_id);
 
@@ -133,4 +135,3 @@ export const useEmpresasStore = defineStore("empresas", () => {
   return { empresas, message, messageType, fetchEmpresas, createEmpresa, fetchMiEmpresa, asignarEmpresa };
 });
 
-  

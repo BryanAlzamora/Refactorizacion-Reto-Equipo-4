@@ -20,6 +20,8 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 const empresa = ref<EmpresaDetalle | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
@@ -37,7 +39,7 @@ const cargarDetalleEmpresa = async () => {
 
   try {
     const response = await fetch(
-      `http://localhost:8000/api/tutorEgibide/empresa/${empresaId}`,
+      `http://${baseURL}/api/tutorEgibide/empresa/${empresaId}`,
       {
         headers: {
           Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -166,10 +168,10 @@ const volver = () => {
           <i class="bi bi-person-badge-fill me-2"></i>
           {{ empresa.instructores.length === 1 ? 'Instructor' : 'Instructores' }}
         </h4>
-        
+
         <div class="row g-3">
-          <div 
-            v-for="instructor in empresa.instructores" 
+          <div
+            v-for="instructor in empresa.instructores"
             :key="instructor.id"
             class="col-md-6"
           >
