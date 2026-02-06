@@ -6,6 +6,8 @@
 
 <script setup>
     import { useTutorEgibideStore } from '@/stores/tutorEgibide';
+
+    
 </script>
 
 <style lang="scss" scoped>

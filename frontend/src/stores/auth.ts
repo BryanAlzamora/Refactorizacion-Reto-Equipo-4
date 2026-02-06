@@ -48,6 +48,8 @@ export const useAuthStore = defineStore("auth", () => {
   function logout() {
     localStorage.removeItem("token");
     currentUser.value = null;
+    token.value = null;
+    router.replace("/login")
   }
 
   async function fetchCurrentUser() {

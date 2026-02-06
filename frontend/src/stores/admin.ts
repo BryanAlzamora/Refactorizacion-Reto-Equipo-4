@@ -98,7 +98,6 @@ export const useAdminStore = defineStore("admin", () => {
       });
 
       const data = await parseJsonSafe(response);
-      console.log(baseURL)
       if (!response.ok) {
         inicio.value = null;
         errorInicio.value = String(buildErrorMessage(data, response));

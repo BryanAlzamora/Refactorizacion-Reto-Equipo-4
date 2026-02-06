@@ -96,6 +96,8 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     }
   }
 
+  //Traer grados con alumnos sin tutor asignado
+ 
   async function fetchInicioTutor() {
     loadingInicio.value = true;
 
@@ -109,7 +111,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       });
 
       const data = await response.json();
-
+      console.log(data)
       if (!response.ok) {
         setMessage(data.message || "Error desconocido, inténtalo más tarde", "error");
         inicio.value = null;

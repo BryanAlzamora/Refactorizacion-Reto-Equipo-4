@@ -25,12 +25,6 @@ class TutorEgibide extends Model {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Estancias asociadas al tutor
-     */
-    public function estancias(): HasMany {
-        return $this->hasMany(Estancia::class, 'tutor_id');
-    }
 
     public function cursos(){
         return $this->belongsToMany(Curso::class,'curso_tutor','tutor_id','curso_id');
@@ -70,6 +64,6 @@ class TutorEgibide extends Model {
     }
 
     public function alumnos(){
-        return $this->hasMany(Alumnos::class,'tutor_id','user_id');
+        return $this->hasMany(Alumnos::class,'tutor_id','id');
     }
 }

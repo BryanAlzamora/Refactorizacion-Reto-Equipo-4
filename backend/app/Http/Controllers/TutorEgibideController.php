@@ -10,9 +10,11 @@ use App\Models\Estancia;
 use App\Models\Empresas;
 
 
-class TutorEgibideController extends Controller {
+class TutorEgibideController extends Controller
+{
 
-    public function getAlumnosByCurrentTutor(Request $request) {
+    public function getAlumnosByCurrentTutor(Request $request)
+    {
         $userId = $request->user()->id;
 
         $tutor = TutorEgibide::where('user_id', $userId)->firstOrFail();
@@ -22,7 +24,8 @@ class TutorEgibideController extends Controller {
         return response()->json($alumnos);
     }
 
-    public function conseguirEmpresasporTutor(Request $request) {
+    public function conseguirEmpresasporTutor(Request $request)
+    {
         $userId = $request->user()->id;
 
         $tutor = TutorEgibide::where('user_id', $userId)->firstOrFail();
@@ -35,7 +38,8 @@ class TutorEgibideController extends Controller {
         return response()->json($empresas);
     }
 
-    public function getDetalleEmpresa(Request $request, $empresaId) {
+    public function getDetalleEmpresa(Request $request, $empresaId)
+    {
         $userId = $request->user()->id;
         $tutor = TutorEgibide::where('user_id', $userId)->firstOrFail();
 
@@ -54,7 +58,8 @@ class TutorEgibideController extends Controller {
         return response()->json($empresa);
     }
 
-    public function getTutoresByCiclo($ciclo_id) {
+    public function getTutoresByCiclo($ciclo_id)
+    {
         $ciclo = Ciclos::find($ciclo_id);
         if (!$ciclo) return response()->json([], 404);
 
@@ -64,7 +69,8 @@ class TutorEgibideController extends Controller {
         return response()->json($tutores, 200);
     }
 
-    public function inicioTutor(Request $request) {
+    public function inicioTutor(Request $request)
+    {
         $user = $request->user();
 
         $tutor = $user->tutorEgibide;
@@ -78,25 +84,18 @@ class TutorEgibideController extends Controller {
         $email = $user->email;
         $hoy = now();
 
-        $alumnosAsignados = $tutor->estancias()
-            ->whereDate('fecha_inicio', '<=', $hoy)
-            ->where(function ($q) use ($hoy) {
-                $q->whereNull('fecha_fin')
-                    ->orWhereDate('fecha_fin', '>=', $hoy);
+        $alumnosAsignados = $tutor->alumnos()->count();
+        $alumnosConEstancia = $tutor->alumnos()
+            ->whereHas('estancias', function ($q) use ($hoy) {
+                $q->whereDate('fecha_inicio', '<=', $hoy)
+                    ->where(function ($q2) use ($hoy) {
+                        $q2->whereNull('fecha_fin')
+                            ->orWhereDate('fecha_fin', '>=', $hoy);
+                    })
+                    ->whereNotNull('empresa_id');
             })
-            ->whereNotNull('alumno_id')
-            ->distinct()
-            ->count('alumno_id');
+            ->count();
 
-        $empresasAsignadas = $tutor->estancias()
-            ->whereDate('fecha_inicio', '<=', $hoy)
-            ->where(function ($q) use ($hoy) {
-                $q->whereNull('fecha_fin')
-                    ->orWhereDate('fecha_fin', '>=', $hoy);
-            })
-            ->whereNotNull('empresa_id')
-            ->distinct()
-            ->count('empresa_id');
 
         return response()->json([
             'tutor' => [
@@ -108,13 +107,14 @@ class TutorEgibideController extends Controller {
             ],
             'counts' => [
                 'alumnos_asignados'  => $alumnosAsignados,
-                'empresas_asignadas' => $empresasAsignadas,
+                'empresas_asignadas' => $alumnosConEstancia,
             ],
         ]);
     }
 
 
-    public function me(Request $request) {
+    public function me(Request $request)
+    {
         $user = $request->user();
 
         $tutor = TutorEgibide::where('user_id', $user->id)->first();
@@ -131,7 +131,8 @@ class TutorEgibideController extends Controller {
     /**
      * Guardar o actualizar horario y calendario de una estancia.
      */
-    public function horasperiodo(Request $request) {
+    public function horasperiodo(Request $request)
+    {
         // Validar los datos
         $validated = $request->validate([
             'alumno_id'     => 'required|exists:alumnos,id',
