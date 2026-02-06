@@ -15,7 +15,7 @@ use App\Http\Controllers\SeguimientosController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EstanciaController;
-
+use App\Http\Controllers\CompetenciaRaController;
 Route::post('/login', [AuthController::class, 'authenticate'])->name('authenticate');
 Route::get('/entregas/{entrega}/archivo', [EntregaController::class, 'archivo']);
 
@@ -110,6 +110,10 @@ Route::middleware('auth:sanctum')->group(
         Route::delete('/estancias/{id}', [EstanciaController::class, 'destroy']);
         Route::get('/alumnos/{alumno_id}/estancias', [EstanciaController::class, 'getEstanciasByAlumno']);
 
+        // CompetenciasRas
+        Route::get('/ciclo/{ciclo_id}/matriz-competencias', [CompetenciaRaController::class, 'getCompRa']);
+Route::post('/competencia-tec-ra/toggle', [CompetenciaRaController::class, 'createOrDelete']);
+            
     }
 
 );

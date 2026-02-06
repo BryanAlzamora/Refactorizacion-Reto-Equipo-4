@@ -18,7 +18,7 @@ class CompetenciasController extends Controller {
             return [
                 'id' => $c->id,
                 'descripcion' => $c->descripcion,
-                'tipo' => 'TECNICA',
+                'tipo' => 'TECNICA'
             ];
         });
 

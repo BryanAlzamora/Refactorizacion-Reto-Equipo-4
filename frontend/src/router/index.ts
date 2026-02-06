@@ -290,6 +290,14 @@ const router = createRouter({
           meta: { role: "admin" },
         },
         {
+          path: "admin/matriz-competencias",
+          name: "admin-matriz-competencias",
+          components: {
+            main: () => import("@/pages/CompRa.vue"), 
+          },
+          meta: { role: "admin" },
+        },
+        {
           path: "admin/alumnos",
           name: "admin-alumnos",
           components: {

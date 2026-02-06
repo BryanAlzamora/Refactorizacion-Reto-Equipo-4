@@ -155,13 +155,18 @@ const userId = computed(() => authStore.currentUser.id);
             >
           </li>
           <li>
+            <RouterLink to="/admin/alumnos" class="sidebar-item"
+              >Alumnos</RouterLink
+            >
+          </li>
+          <li>
             <RouterLink to="/admin/empresas" class="sidebar-item"
               >Empresas</RouterLink
             >
           </li>
           <li>
-            <RouterLink to="/admin/alumnos" class="sidebar-item"
-              >Alumnos</RouterLink
+            <RouterLink to="/admin/matriz-competencias" class="sidebar-item"
+              >Competencias vs Ras</RouterLink
             >
           </li>
         </ul>
