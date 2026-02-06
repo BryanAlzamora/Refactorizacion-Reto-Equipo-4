@@ -8,6 +8,7 @@ onMounted(() => {
   alumnosStore.fetchInicio();
 });
 
+console.log(alumnosStore.inicio)
 function formatDate(iso) {
   if (!iso) return "—";
   // iso tipo "2026-01-05"

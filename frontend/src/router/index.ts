@@ -194,14 +194,6 @@ const router = createRouter({
           meta: { role: "tutor_egibide" },
         },
         {
-          path:"tutor-egibide/crear-estancia",
-          name:"tutor_egibide-crear-estancia",
-          components:{
-            main: ()=> import("@/pages/TutorEgibide/estancia.vue"),
-          },
-          meta: {role: "tutor_egibide"},
-        },
-        {
           path: "tutor-empresa/inicio",
           name: "tutor_empresa-inicio",
           components: {

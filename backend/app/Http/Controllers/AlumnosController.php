@@ -73,88 +73,96 @@ class AlumnosController extends Controller {
         ], 201);
     }
 
-    public function inicio(Request $request) {
-        $user = $request->user();
+    public function inicio(Request $request)
+{
+    $user = $request->user();
 
-        $alumno = $user->alumno;
+    $alumno = $user->alumno;
 
-        if (!$alumno) {
-            return response()->json([
-                'message' => 'El usuario no tiene alumno asociado.'
-            ], 404);
-        }
+    if (!$alumno) {
+        return response()->json([
+            'message' => 'El usuario no tiene alumno asociado.'
+        ], 404);
+    }
 
-        $hoy = now();
+    $hoy = now();
 
-        $estanciaActual = $alumno->estancias()
-            ->whereDate('fecha_inicio', '<=', $hoy)
-            ->where(function ($q) use ($hoy) {
-                $q->whereNull('fecha_fin')
-                    ->orWhereDate('fecha_fin', '>=', $hoy);
-            })
-            ->orderBy('fecha_inicio', 'desc')
-            ->first();
-
-        if (!$estanciaActual) {
-            $estanciaActual = $alumno->estancias()
-                ->orderBy('fecha_inicio', 'desc')
-                ->first();
-        }
-
-        if (!$estanciaActual) {
-            return response()->json([
-                'alumno' => [
-                    'nombre' => $alumno->nombre,
-                    'apellidos' => $alumno->apellidos,
-                ],
-                'estancia' => null,
-                'message' => 'El alumno no tiene estancias asignadas todavía.'
-            ]);
-        }
-
-        $estanciaActual->load([
+    // Buscar la estancia actual con las relaciones necesarias
+    $estanciaActual = $alumno->estancias()
+        ->with([
             'empresa:id,nombre',
             'tutor:id,nombre,apellidos,telefono',
-            'instructor:id,nombre,apellidos,telefono,empresa_id',
+            'instructor:id,nombre,apellidos,telefono',
             'horariosDia.horariosTramo',
-        ]);
+        ])
+        ->whereDate('fecha_inicio', '<=', $hoy)
+        ->where(function ($q) use ($hoy) {
+            $q->whereNull('fecha_fin')
+                ->orWhereDate('fecha_fin', '>=', $hoy);
+        })
+        ->orderBy('fecha_inicio', 'desc')
+        ->first();
 
+    // Si no hay estancia actual, buscar la más reciente
+    if (!$estanciaActual) {
+        $estanciaActual = $alumno->estancias()
+            ->with([
+                'empresa:id,nombre',
+                'tutor:id,nombre,apellidos,telefono',
+                'instructor:id,nombre,apellidos,telefono',
+                'horariosDia.horariosTramo',
+            ])
+            ->orderBy('fecha_inicio', 'desc')
+            ->first();
+    }
+
+    if (!$estanciaActual) {
         return response()->json([
             'alumno' => [
                 'nombre' => $alumno->nombre,
                 'apellidos' => $alumno->apellidos,
             ],
-            'estancia' => [
-                'fecha_inicio' => optional($estanciaActual->fecha_inicio)->toDateString(),
-                'fecha_fin' => optional($estanciaActual->fecha_fin)->toDateString(),
-                'puesto' => $estanciaActual->puesto,
-                'empresa' => $estanciaActual->empresa ? [
-                    'nombre' => $estanciaActual->empresa->nombre,
-                ] : null,
-                'tutor' => $estanciaActual->tutor ? [
-                    'nombre' => $estanciaActual->tutor->nombre,
-                    'apellidos' => $estanciaActual->tutor->apellidos,
-                    'telefono' => $estanciaActual->tutor->telefono,
-                ] : null,
-                'instructor' => $estanciaActual->instructor ? [
-                    'nombre' => $estanciaActual->instructor->nombre,
-                    'apellidos' => $estanciaActual->instructor->apellidos,
-                    'telefono' => $estanciaActual->instructor->telefono,
-                ] : null,
-                'horario' => $estanciaActual->horariosDia->map(function ($dia) {
-                    return [
-                        'dia_semana' => $dia->dia_semana,
-                        'tramos' => $dia->horariosTramo->map(function ($t) {
-                            return [
-                                'hora_inicio' => $t->hora_inicio,
-                                'hora_fin' => $t->hora_fin,
-                            ];
-                        })->values()
-                    ];
-                })->values(),
-            ],
+            'estancia' => null,
+            'message' => 'El alumno no tiene estancias asignadas todavía.'
         ]);
     }
+
+    return response()->json([
+        'alumno' => [
+            'nombre' => $alumno->nombre,
+            'apellidos' => $alumno->apellidos,
+        ],
+        'estancia' => [
+            'fecha_inicio' => optional($estanciaActual->fecha_inicio)->toDateString(),
+            'fecha_fin' => optional($estanciaActual->fecha_fin)->toDateString(),
+            'puesto' => $estanciaActual->puesto,
+            'empresa' => $estanciaActual->empresa ? [
+                'nombre' => $estanciaActual->empresa->nombre,
+            ] : null,
+            'tutor' => $estanciaActual->tutor ? [
+                'nombre' => $estanciaActual->tutor->nombre,
+                'apellidos' => $estanciaActual->tutor->apellidos,
+                'telefono' => $estanciaActual->tutor->telefono,
+            ] : null,
+            'instructor' => $estanciaActual->instructor ? [
+                'nombre' => $estanciaActual->instructor->nombre,
+                'apellidos' => $estanciaActual->instructor->apellidos,
+                'telefono' => $estanciaActual->instructor->telefono,
+            ] : null,
+            'horario' => $estanciaActual->horariosDia->map(function ($dia) {
+                return [
+                    'dia_semana' => $dia->dia_semana,
+                    'tramos' => $dia->horariosTramo->map(function ($t) {
+                        return [
+                            'hora_inicio' => $t->hora_inicio,
+                            'hora_fin' => $t->hora_fin,
+                        ];
+                    })->values()
+                ];
+            })->values(),
+        ],
+    ]);
+}
 
     public function me() {
         $userId = auth()->id();
