@@ -17,8 +17,8 @@ return new class extends Migration {
             $table->string('ciudad', 120)->nullable();
 
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
-            $table->foreignId('curso_id')->constrained('cursos')->nullOnDelete();
-            $table->foreignId('tutor_id')->constrained('tutores')->nullOnDelete();
+            $table->foreignId('curso_id')->constrained('cursos');
+            $table->foreignId('tutor_id')->constrained('tutores');
 
             $table->timestamps();
         });

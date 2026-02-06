@@ -14,7 +14,7 @@ class CursoTutorSeeder extends Seeder {
 
         DB::table('curso_tutor')->updateOrInsert(
             [
-                'curso_1' => 1,
+                'curso_id' => 1,
                 'tutor_id' => 1
             ]
         );
