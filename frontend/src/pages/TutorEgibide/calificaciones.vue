@@ -9,6 +9,17 @@ import { useTutorEgibideStore } from "@/stores/tutorEgibide";
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+// Props: modo de uso del componente
+const props = withDefaults(
+  defineProps<{
+    modo: 'tutor' | 'alumno';
+  }>(),
+  {
+    modo: 'tutor'
+  }
+);
+
+
 const route = useRoute();
 const router = useRouter();
 
@@ -16,66 +27,66 @@ const tutorEgibideStore = useTutorEgibideStore();
 const alumnoStore = useAlumnosStore();
 const competenciasStore = useCompetenciasStore();
 
-const alumno = ref<Alumno | null>(null);
 const asignaturas = ref<Asignatura[]>([]);
 const notasEgibide = ref<NotaEgibide[]>([]);
 const notasTecnicas = ref<NotaCompetenciaTecnica[]>([]);
 const notaTransversal = ref<number>(0);
 const notaCuaderno = ref<number | null>(null);
+const notasEgibidePorAsignatura = ref<Record<number, number>>({});
 
 const isLoading = ref(true);
 const editando = ref(false);
 const error = ref<string | null>(null);
 
-// NUEVO: reactive para v-model
-const notasEgibidePorAsignatura = ref<Record<number, number>>({});
+// Computed: alumno según modo
+const alumno = computed<Alumno | null>(() => {
+  if (props.modo === 'tutor') {
+    const alumnoIdRuta = Number(route.params.alumnoId);
+    return tutorEgibideStore.alumnosAsignados.find(a => Number(a.id) === alumnoIdRuta) || null;
+  }
+  // modo alumno
+  return alumnoStore.inicio?.alumno ?? null;
+});
 
-// Obtener parámetros de la ruta
-const alumnoId = Number(route.params.alumnoId);
+// Computed: id del alumno
+const alumnoId = computed(() => alumno.value?.id ?? null);
 
+// On mounted
 onMounted(async () => {
   try {
-    // Buscar el alumno
-    alumno.value =
-      tutorEgibideStore.alumnosAsignados.find((a: Alumno) => {
-        return Number(a.user_id) === alumnoId;
-      }) || null;
-
-    if (!alumno.value) {
+    if (!alumnoId.value) {
       error.value = "Alumno no encontrado";
+      return;
     }
 
-    // Obtener asignaturas
-    await alumnoStore.getAsignaturasAlumno(alumnoId);
+    // Asignaturas
+    await alumnoStore.getAsignaturasAlumno(alumnoId.value);
     asignaturas.value = alumnoStore.asignaturas;
 
-    // Obtener y calcular nota tecnica
-    const response =
-      await competenciasStore.calcularNotasTecnicasByAlumno(alumnoId);
+    // Notas técnicas
+    const response = await competenciasStore.calcularNotasTecnicasByAlumno(alumnoId.value);
     notasTecnicas.value = response.notas_competenciasTec;
 
-    // Obtener nota transversal
-    const responseTrans =
-      await competenciasStore.getNotaTransversalByAlumno(alumnoId);
+    // Nota transversal
+    const responseTrans = await competenciasStore.getNotaTransversalByAlumno(alumnoId.value);
     notaTransversal.value = responseTrans.nota_media;
 
-    // Obtener notas egibide
-    const responseEgibide = await alumnoStore.getNotasEgibideByAlumno(alumnoId);
+    // Notas Egibide
+    const responseEgibide = await alumnoStore.getNotasEgibideByAlumno(alumnoId.value);
     if (responseEgibide) {
       notasEgibide.value = alumnoStore.notasEgibide;
-
-      // Inicializar reactive para v-model
       notasEgibide.value.forEach(n => {
         notasEgibidePorAsignatura.value[n.asignatura_id] = Number(n.nota ?? 0);
       });
     }
 
-    // Obtener nota cuaderno
-    await alumnoStore.getNotaCuadernoByAlumno(alumnoId);
+    // Nota cuaderno
+    await alumnoStore.getNotaCuadernoByAlumno(alumnoId.value);
     notaCuaderno.value = alumnoStore.notaCuaderno ?? 0;
 
-  } catch (error) {
-    console.error("Error al cargar alumnos:", error);
+  } catch (err) {
+    console.error("Error al cargar calificaciones:", err);
+    error.value = "Error al cargar calificaciones";
   } finally {
     isLoading.value = false;
   }
@@ -84,9 +95,8 @@ onMounted(async () => {
 // Guardado autosave
 const guardarNotaEgibide = async (asignaturaId: number) => {
   try {
-    const nota = notasEgibidePorAsignatura.value[asignaturaId] ?? 0;;
-
-    await alumnoStore.guardarNotasEgibideByAlumno(alumnoId, nota, asignaturaId);
+    const nota = notasEgibidePorAsignatura.value[asignaturaId] ?? 0;
+    await alumnoStore.guardarNotasEgibideByAlumno(alumnoId.value!, nota, asignaturaId);
   } catch (err) {
     console.error(err);
     alert("Error al guardar la nota Egibide");
@@ -95,7 +105,7 @@ const guardarNotaEgibide = async (asignaturaId: number) => {
 
 const guardarNotaCuaderno = async () => {
   try {
-    await alumnoStore.guardarNotaCuadernoByAlumno(alumnoId, notaCuaderno.value ?? 0);
+    await alumnoStore.guardarNotaCuadernoByAlumno(alumnoId.value!, notaCuaderno.value ?? 0);
   } catch (err) {
     console.error(err);
     alert("Error al guardar la nota del cuaderno");
@@ -105,7 +115,7 @@ const guardarNotaCuaderno = async () => {
 // Computeds
 const notasTecnicasPorAsignatura = computed(() => {
   const map: Record<number, number> = {};
-  notasTecnicas.value.forEach((n) => {
+  notasTecnicas.value.forEach(n => {
     map[n.asignatura_id] = n.nota_media;
   });
   return map;
@@ -113,8 +123,7 @@ const notasTecnicasPorAsignatura = computed(() => {
 
 const notaFinalPorAsignatura = computed<Record<number, number>>(() => {
   const map: Record<number, number> = {};
-
-  asignaturas.value.forEach((asignatura) => {
+  asignaturas.value.forEach(asignatura => {
     const egibide = Number(notasEgibidePorAsignatura.value[asignatura.id] ?? 0);
     const tecnica = notasTecnicasPorAsignatura.value[asignatura.id];
     const transversal = notaTransversal.value ?? 0;
@@ -125,12 +134,10 @@ const notaFinalPorAsignatura = computed<Record<number, number>>(() => {
     if (tecnica != null) {
       notaEmpresa = tecnica * 0.6 + transversal * 0.2 + cuaderno * 0.2;
     } else {
-      // Técnica no existe → 60% pasa al 20% transversal
       notaEmpresa = transversal * 0.8 + cuaderno * 0.2;
     }
 
-    const notaFinal = egibide * 0.8 + notaEmpresa * 0.2;
-    map[asignatura.id] = Math.round(notaFinal * 100) / 100;
+    map[asignatura.id] = Math.round((egibide * 0.8 + notaEmpresa * 0.2) * 100) / 100;
   });
 
   return map;
@@ -141,16 +148,13 @@ const getNotaFinal = (asignaturaId: number) => {
   return isNaN(nota ?? NaN) ? "-" : nota;
 };
 
-const volver = () => {
-  router.back();
-};
+const volver = () => router.back();
+const volverAlumnos = () => { router.back(); router.back(); };
 
-const volverAlumnos = () => {
-  router.back();
-  router.back();
-};
+// Computed: controla si puede editar (solo tutor)
+const puedeEditar = computed(() => props.modo === 'tutor');
+
 </script>
-
 
 <template>
   <Toast v-if="alumnoStore.message" :message="alumnoStore.message" :messageType="alumnoStore.messageType" />
@@ -165,50 +169,26 @@ const volverAlumnos = () => {
     </div>
 
     <!-- Error -->
-    <div
-      v-else-if="error"
-      class="alert alert-danger d-flex align-items-center"
-      role="alert"
-    >
+    <div v-else-if="error" class="alert alert-danger d-flex align-items-center" role="alert">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
       <div>
         {{ error }}
-        <button class="btn btn-sm btn-outline-danger ms-3" @click="volver">
-          Volver a alumno
-        </button>
+        <button class="btn btn-sm btn-outline-danger ms-3" @click="volver">Volver</button>
       </div>
     </div>
 
-    <!-- Sin alumno -->
-    <div v-else-if="!alumno" class="alert alert-warning">
-      No se ha encontrado el alumno
-      <button class="btn btn-sm btn-outline-warning ms-3" @click="volver">
-        Volver
-      </button>
-    </div>
-
     <!-- Contenido principal -->
-    <div v-else>
+    <div v-else-if="alumno">
       <!-- Breadcrumb -->
       <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a
-              href="#"
-              @click.prevent="volverAlumnos"
-              class="text-decoration-none"
-            >
-              <i class="bi bi-arrow-left"></i>
-              Alumnos
-            </a>
-          </li>
-          <li class="breadcrumb-item">
-            <a href="#" @click.prevent="volver" class="text-decoration-none">
-              {{ alumno.nombre }} {{ alumno.apellidos }}
+            <a href="#" @click.prevent="volverAlumnos" class="text-decoration-none">
+              <i class="bi bi-arrow-left"></i> Alumnos
             </a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
-            Calificaciones
+            {{ alumno.nombre }} {{ alumno.apellidos }}
           </li>
         </ol>
       </nav>
@@ -217,21 +197,13 @@ const volverAlumnos = () => {
       <div class="card mb-4 shadow-sm">
         <div class="card-header d-flex justify-content-between">
           <h3>Calificaciones</h3>
-          <div>
-            <button
-              class="btn btn-warning me-2"
-              @click="editando = !editando"
-            >
-              {{ editando ? 'Cancelar Edicion' : 'Editar Calificaciones' }}
-            </button>
-          </div>
-
+          <button class="btn btn-warning me-2" @click="editando = !editando" v-if="puedeEditar">
+            {{ editando ? 'Cancelar Edición' : 'Editar Calificaciones' }}
+          </button>
         </div>
+
         <div class="card-body">
-          <table
-            v-if="asignaturas.length"
-            class="table table-bordered text-center align-middle border-primary shadow"
-          >
+          <table v-if="asignaturas.length" class="table table-bordered text-center align-middle border-primary shadow">
             <thead>
               <tr>
                 <th rowspan="2" class="bg-primary"></th>
@@ -255,15 +227,13 @@ const volverAlumnos = () => {
                     min="0"
                     max="10"
                     v-model.number="notasEgibidePorAsignatura[asignatura.id]"
-                    :disabled="!editando"
+                    :disabled="!editando || !puedeEditar"
                     @blur="guardarNotaEgibide(asignatura.id)"
                     class="form-control form-control-sm text-center"
                   />
                 </td>
                 <td>{{ notasTecnicasPorAsignatura[asignatura.id] ?? "-" }}</td>
-                <td v-if="index === 0" :rowspan="asignaturas.length">
-                  {{ notaTransversal }}
-                </td>
+                <td v-if="index === 0" :rowspan="asignaturas.length">{{ notaTransversal }}</td>
                 <td v-if="index === 0" :rowspan="asignaturas.length">
                   <input
                     type="number"
@@ -271,26 +241,24 @@ const volverAlumnos = () => {
                     min="0"
                     max="10"
                     v-model.number="notaCuaderno"
-                    :disabled="!editando"
+                    :disabled="!editando || !puedeEditar"
                     @blur="guardarNotaCuaderno()"
                     class="form-control form-control-sm text-center"
                   />
                 </td>
                 <td>{{ getNotaFinal(asignatura.id) }}</td>
-
               </tr>
             </tbody>
           </table>
 
           <div v-else class="alert alert-warning">
             Este alumno no tiene calificaciones
-            <button class="btn btn-sm btn-outline-warning ms-3" @click="volver">
-              Volver
-            </button>
+            <button class="btn btn-sm btn-outline-warning ms-3" @click="volver">Volver</button>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -298,7 +266,6 @@ const volverAlumnos = () => {
 .breadcrumb-item a {
   color: var(--bs-primary);
 }
-
 .breadcrumb-item a:hover {
   color: var(--bs-primary);
   text-decoration: underline !important;

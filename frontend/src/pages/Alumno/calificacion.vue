@@ -4,7 +4,7 @@ import { useAlumnosStore } from "@/stores/alumnos";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import type { NotaCuaderno } from "@/interfaces/Notas";
-
+import calificaciones from "../TutorEgibide/calificaciones.vue";
 const alumnosStore = useAlumnosStore();
 const route = useRoute();
 
@@ -27,9 +27,7 @@ onMounted(async () => {
     <h2 class="mb-4">CALIFICACION</h2>
 
     <div v-if="alumnosStore.notaCuaderno !== null" class="nota card">
-      <div class="card-body">
-        <p><strong>Nota Cuaderno:</strong> {{ notaCuaderno }}</p>
-      </div>
+      <calificaciones modo="alumno"></calificaciones>
     </div>
 
     <div

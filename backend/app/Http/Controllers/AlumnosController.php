@@ -103,10 +103,7 @@ class AlumnosController extends Controller {
 
         if (!$estanciaActual) {
             return response()->json([
-                'alumno' => [
-                    'nombre' => $alumno->nombre,
-                    'apellidos' => $alumno->apellidos,
-                ],
+                'alumno' => $alumno,
                 'estancia' => null,
                 'message' => 'El alumno no tiene estancias asignadas todavía.'
             ]);
@@ -114,16 +111,12 @@ class AlumnosController extends Controller {
 
         $estanciaActual->load([
             'empresa:id,nombre',
-            'tutor:id,nombre,apellidos,telefono',
             'instructor:id,nombre,apellidos,telefono,empresa_id',
             'horariosDia.horariosTramo',
         ]);
 
         return response()->json([
-            'alumno' => [
-                'nombre' => $alumno->nombre,
-                'apellidos' => $alumno->apellidos,
-            ],
+            'alumno' => $alumno,
             'estancia' => [
                 'fecha_inicio' => optional($estanciaActual->fecha_inicio)->toDateString(),
                 'fecha_fin' => optional($estanciaActual->fecha_fin)->toDateString(),
@@ -131,10 +124,10 @@ class AlumnosController extends Controller {
                 'empresa' => $estanciaActual->empresa ? [
                     'nombre' => $estanciaActual->empresa->nombre,
                 ] : null,
-                'tutor' => $estanciaActual->tutor ? [
-                    'nombre' => $estanciaActual->tutor->nombre,
-                    'apellidos' => $estanciaActual->tutor->apellidos,
-                    'telefono' => $estanciaActual->tutor->telefono,
+                'tutor' => $alumno->tutor ? [
+                    'nombre' => $alumno->tutor->nombre,
+                    'apellidos' => $alumno->tutor->apellidos,
+                    'telefono' => $alumno->tutor->telefono,
                 ] : null,
                 'instructor' => $estanciaActual->instructor ? [
                     'nombre' => $estanciaActual->instructor->nombre,

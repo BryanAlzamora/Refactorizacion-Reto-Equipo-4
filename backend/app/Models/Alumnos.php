@@ -43,6 +43,6 @@ class Alumnos extends Model {
         return $this->belongsTo(Curso::class,'curso_id','id');
     }
     public function tutor(): BelongsTo{
-        return $this->belongsTo(TutorEgibide::class,'tutor_id','user_id');
+        return $this->belongsTo(TutorEgibide::class,'tutor_id','id');
     }
 }
