@@ -18,13 +18,13 @@ class HorarioDia extends Model {
    * Get the estancia that owns this horario
    */
   public function estancia(): BelongsTo {
-    return $this->belongsTo(Estancia::class);
+    return $this->belongsTo(Estancia::class, 'estancia_id'); 
   }
 
   /**
    * Get all horarios tramo for this dia
    */
   public function horariosTramo(): HasMany {
-    return $this->hasMany(HorarioTramo::class);
+    return $this->hasMany(HorarioTramo::class, 'horario_dia_id');
   }
 }

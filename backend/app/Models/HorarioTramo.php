@@ -14,10 +14,6 @@ class HorarioTramo extends Model {
     'horario_dia_id',
   ];
 
-  protected $casts = [
-    'hora_inicio' => 'time',
-    'hora_fin' => 'time',
-  ];
 
   /**
    * Get the horario dia that owns this horario tramo

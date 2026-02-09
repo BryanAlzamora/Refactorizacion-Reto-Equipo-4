@@ -199,7 +199,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   }
 
   // Guardar horario y periodo de alumno
-  async function guardarHorarioAlumno(
+    async function guardarHorarioAlumno(
     alumnoId: number,
     fechaInicio: string,
     fechaFin: string | null,
@@ -270,6 +270,50 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     }
   }
 
+    async function guardarHorarioSemanal(
+    estanciaId: number,
+    horarios: Array<{
+      dia_semana: string;
+      tramos: Array<{ hora_inicio: string; hora_fin: string }>;
+    }>
+  ) {
+    try {
+      const response = await fetch(`${baseURL}/api/horario/asignar`, {
+        method: "POST",
+        headers: {
+          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          estancia_id: estanciaId,
+          horarios: horarios,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(
+          data.message || "Error al asignar el horario",
+          "error"
+        );
+        return false;
+      }
+
+      setMessage(
+        data.message || "Horario asignado correctamente",
+        "success"
+      );
+      return true;
+    } catch (err) {
+      console.error(err);
+      setMessage("Error al conectar con el servidor", "error");
+      return false;
+    }
+  }
+
+
   async function updateAlumnoEmpresa(alumnoId: number, empresaId: number) {
     const alumnoToUpdate = alumnosAsignados.value.find(
       (a) => a.id === alumnoId,
@@ -301,6 +345,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     fetchAlumnosAsignados,
     fetchEmpresasAsignadas,
     guardarHorarioAlumno,
+    guardarHorarioSemanal,
     updateAlumnoEmpresa,
     setMessage,
     fetchAlumnosDeMiCursoSinTutorAsignado,

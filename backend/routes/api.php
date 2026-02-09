@@ -16,6 +16,7 @@ use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EstanciaController;
 use App\Http\Controllers\CompetenciaRaController;
+use App\Http\Controllers\HorarioController;
 Route::post('/login', [AuthController::class, 'authenticate'])->name('authenticate');
 Route::get('/entregas/{entrega}/archivo', [EntregaController::class, 'archivo']);
 
@@ -115,6 +116,10 @@ Route::middleware('auth:sanctum')->group(
         // CompetenciasRas
         Route::get('/ciclo/{id}/matriz-competencias', [CompetenciaRaController::class, 'getCompRa']);
         Route::post('/competenciasTecnicas/asignar-ra', [CompetenciaRaController::class, 'createOrDelete']);            
+    
+        // Horario
+        Route::post('/horario/asignar', [HorarioController::class, 'asignarHorario']);
+        Route::get('/horario/{idEstancia}', [HorarioController::class, 'getHorario']);
     }
 
 );
