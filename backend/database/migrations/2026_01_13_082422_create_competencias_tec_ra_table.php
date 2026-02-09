@@ -9,7 +9,7 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('competencias_tec_ra', function (Blueprint $table) {
+        Schema::create('competencia_tec_ra', function (Blueprint $table) {
             $table->foreignId('competencia_tec_id')
                 ->constrained('competencias_tec')
                 ->cascadeOnDelete()->cascadeOnUpdate();
@@ -26,6 +26,6 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('competencias_tec_ra');
+        Schema::dropIfExists('competencia_tec_ra');
     }
 };

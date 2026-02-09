@@ -113,9 +113,8 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/alumnos/{alumno_id}/estancias', [EstanciaController::class, 'getEstanciasByAlumno']);
 
         // CompetenciasRas
-        Route::get('/ciclo/{ciclo_id}/matriz-competencias', [CompetenciaRaController::class, 'getCompRa']);
-Route::post('/competencia-tec-ra/toggle', [CompetenciaRaController::class, 'createOrDelete']);
-            
+        Route::get('/ciclo/{id}/matriz-competencias', [CompetenciaRaController::class, 'getCompRa']);
+        Route::post('/competenciasTecnicas/asignar-ra', [CompetenciaRaController::class, 'createOrDelete']);            
     }
 
 );
