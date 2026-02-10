@@ -21,7 +21,7 @@
                   :data-bs-target="'#collapse' + curso.id" aria-expanded="false"
                   :aria-controls="'collapse' + curso.id">
             <i class="bi bi-journal-text me-2"></i>
-            {{ curso.ciclo.nombre }}
+            {{ curso.nombre }}
             <span class="badge bg-secondary ms-2">Alumnos: {{ curso.alumnos.length }}</span>
           </button>
         </h2>
@@ -64,6 +64,7 @@ onMounted(async () => {
   await storeTutor.fetchInicioTutor();
   await storeTutor.fetchAlumnosDeMiCursoSinTutorAsignado(storeTutor.inicio.tutor.id);
 });
+
 
 const asignarmeAlumno = async (alumno) => {
   try {

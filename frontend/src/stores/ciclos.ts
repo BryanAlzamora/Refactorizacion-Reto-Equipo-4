@@ -45,23 +45,6 @@ export const useCiclosStore = defineStore("ciclos", () => {
     ciclos.value = data as Ciclo[];
   }
 
-  // Obtener los cursos por ciclo
-  async function fetchCursosByCiclos(ciclo_id: number) {
-    const response = await fetch(
-      `${baseURL}/api/ciclo/${ciclo_id}/cursos`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
-          Accept: "application/json",
-        },
-      },
-    );
-
-    const data = await response.json();
-    cursos.value = data as Curso[];
-  }
-
   // Obtener los tutores por ciclo
   async function fetchTutoresByCiclos(ciclo_id: number) {
     const response = await fetch(
@@ -159,7 +142,6 @@ export const useCiclosStore = defineStore("ciclos", () => {
     message,
     messageType,
     fetchCiclos,
-    fetchCursosByCiclos,
     fetchTutoresByCiclos,
     createCiclo,
     getCiclosPorFamilia,

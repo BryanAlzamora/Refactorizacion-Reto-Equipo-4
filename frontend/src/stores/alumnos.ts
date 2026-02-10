@@ -197,6 +197,8 @@ export const useAlumnosStore = defineStore("alumnos", () => {
   async function createAlumno(
     nombre: string,
     apellidos: string,
+    matricula: string,
+    dni: string,
     telefono: number,
     ciudad: string,
     curso: number,
@@ -212,6 +214,8 @@ export const useAlumnosStore = defineStore("alumnos", () => {
       body: JSON.stringify({
         nombre,
         apellidos,
+        matricula,
+        dni,
         telefono,
         ciudad,
         curso,

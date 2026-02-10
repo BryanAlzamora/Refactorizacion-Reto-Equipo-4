@@ -68,8 +68,7 @@ class TutorEgibideController extends Controller
         if (!$ciclo)
             return response()->json([], 404);
 
-        $familia = $ciclo->familiaProfesional;
-        $tutores = $familia?->tutores ?? collect();
+        $tutores = $ciclo?->tutores ?? collect();
 
         return response()->json($tutores, 200);
     }
@@ -200,9 +199,8 @@ class TutorEgibideController extends Controller
         $tutor = TutorEgibide::find($tutorId);
 
         // Obtenemos los cursos del tutor con su ciclo y alumnos sin tutor asignado
-        $cursos = $tutor->cursos()
+        $cursos = $tutor->ciclos()
             ->with([
-                'ciclo', // cargamos el ciclo de cada curso
                 'alumnos' => function ($query) {
                     $query->whereNull('tutor_id'); // solo alumnos sin tutor
                 }

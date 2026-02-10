@@ -184,14 +184,14 @@ const formatDate = (dateString: string) => {
     <div class="info-item">
       <i class="bi bi-telephone-fill text-primary me-2"></i>
       <span class="text-muted">Teléfono:</span>
-      <strong class="ms-2">{{ alumno.telefono }}</strong>
+      <strong class="ms-2">{{ alumno.telefono ?? "--" }}</strong>
     </div>
   </div>
   <div class="col-md-6">
     <div class="info-item">
       <i class="bi bi-geo-alt-fill text-primary me-2"></i>
       <span class="text-muted">Ciudad:</span>
-      <strong class="ms-2">{{ alumno.ciudad }}</strong>
+      <strong class="ms-2">{{ alumno.ciudad ?? "--" }}</strong>
     </div>
   </div>
   <div class="col-md-6">

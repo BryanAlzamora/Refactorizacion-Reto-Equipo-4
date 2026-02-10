@@ -31,6 +31,8 @@ class AlumnosController extends Controller {
         $validated = $request->validate([
             'nombre' => ['required'],
             'apellidos' => ['required'],
+            'matricula' => ['required'],
+            'dni' => ['required'],
             'telefono' => ['required'],
             'ciudad' => ['required'],
             'curso' => ['required'],
@@ -52,20 +54,22 @@ class AlumnosController extends Controller {
         $alumno = Alumnos::create([
             'nombre' => $validated['nombre'],
             'apellidos' => $validated['apellidos'],
+            'matricula_id' => $validated['matricula'],
+            'dni' => $validated['dni'],
             'ciudad' => $validated['ciudad'],
             'telefono' => $validated['telefono'],
             'user_id' => $user->id,
         ]);
 
-        // ESTANCIA
-        Estancia::create([
-            'puesto' => 'Sin asignar',
-            'fecha_inicio' => now()->toDateString(),
-            'horas_totales' => 0,
-            'alumno_id' => $alumno->id,
-            'tutor_id' => $validated['tutor'],
-            'curso_id' => $validated['curso'],
-        ]);
+        // // ESTANCIA
+        // Estancia::create([
+        //     'puesto' => 'Sin asignar',
+        //     'fecha_inicio' => now()->toDateString(),
+        //     'horas_totales' => 0,
+        //     'alumno_id' => $alumno->id,
+        //     'tutor_id' => $validated['tutor'],
+        //     'curso_id' => $validated['curso'],
+        // ]);
 
         return response()->json([
             'success' => true,

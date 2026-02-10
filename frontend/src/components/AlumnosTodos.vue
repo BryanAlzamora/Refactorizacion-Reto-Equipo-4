@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Alumno } from "@/interfaces/Alumno";
 import { useAlumnosStore } from "@/stores/alumnos";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -11,42 +11,73 @@ const alumnos = ref<Alumno[]>([]);
 const isLoading = ref(true);
 const searchQuery = ref("");
 
-// Filtrado de alumnos por búsqueda
+// PAGINACIÓN
+const currentPage = ref(1);
+const itemsPerPage = ref(8);
+const goToPageInput = ref<number | null>(null);
+
+// FILTRO
 const alumnosFiltrados = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return alumnos.value;
-  }
+  if (!searchQuery.value.trim()) return alumnos.value;
 
   const query = searchQuery.value.toLowerCase();
   return alumnos.value.filter(
-    (alumno) =>
-      alumno.nombre.toLowerCase().includes(query) ||
-      (alumno.apellidos && alumno.apellidos.toLowerCase().includes(query)),
+    (a) =>
+      a.nombre.toLowerCase().includes(query) ||
+      (a.apellidos && a.apellidos.toLowerCase().includes(query))
   );
 });
 
+// PAGINADOS
+const alumnosPaginados = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  return alumnosFiltrados.value.slice(start, start + itemsPerPage.value);
+});
+
+const totalPages = computed(() =>
+  Math.ceil(alumnosFiltrados.value.length / itemsPerPage.value)
+);
+
+// RESET PAGINA AL BUSCAR
+watch(searchQuery, () => {
+  currentPage.value = 1;
+});
+
+// FUNCIÓN IR A PÁGINA
+function goToPage() {
+  if (!goToPageInput.value) return;
+
+  if (goToPageInput.value < 1) {
+    currentPage.value = 1;
+  } else if (goToPageInput.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  } else {
+    currentPage.value = goToPageInput.value;
+  }
+
+  goToPageInput.value = null;
+}
+
 onMounted(async () => {
   try {
-    await alumnosStore.fetchAlumnos(); // SELECT ALL
+    await alumnosStore.fetchAlumnos();
     alumnos.value = alumnosStore.alumnos;
-  } catch (error) {
-    console.error("Error al cargar alumnos:", error);
   } finally {
     isLoading.value = false;
   }
 });
 
-const verDetalleAlumno = (alumnoId: number) => {
+const verDetalleAlumno = (id: number) => {
   router.push({
     name: "admin-detalle_alumno",
-    params: { alumnoId: alumnoId.toString() },
+    params: { alumnoId: id.toString() },
   });
 };
 </script>
 
 <template>
   <div class="alumnos-asignados-container">
-    <!-- Header con búsqueda -->
+    <!-- BUSCADOR -->
     <div class="mb-3">
       <div class="input-group">
         <span class="input-group-text bg-white border-end-0">
@@ -62,44 +93,38 @@ const verDetalleAlumno = (alumnoId: number) => {
       </div>
     </div>
 
-    <!-- Estado de carga -->
+    <!-- LOADING -->
     <div v-if="isLoading" class="text-center py-5">
-      <div class="spinner-border" style="color: #81045f;" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
-      <p class="mt-3 text-muted fw-semibold">Cargando alumnos...</p>
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-3 text-muted">Cargando alumnos…</p>
     </div>
 
-    <!-- Sin alumnos registrados -->
+    <!-- VACÍO -->
     <div
-      v-else-if="!isLoading && alumnos.length === 0"
+      v-else-if="alumnos.length === 0"
       class="alert alert-info d-flex align-items-center"
-      role="alert"
     >
       <i class="bi bi-info-circle-fill me-2"></i>
-      <div>No hay alumnos registrados.</div>
+      No hay alumnos registrados
     </div>
 
-    <!-- Sin resultados de búsqueda -->
+    <!-- SIN RESULTADOS -->
     <div
-      v-else-if="!isLoading && alumnosFiltrados.length === 0 && searchQuery"
+      v-else-if="alumnosFiltrados.length === 0"
       class="alert alert-warning d-flex align-items-center"
-      role="alert"
     >
       <i class="bi bi-search me-2"></i>
-      <div>No se encontraron alumnos con "{{ searchQuery }}"</div>
+      No hay resultados para "{{ searchQuery }}"
     </div>
 
-    <!-- Lista -->
+    <!-- LISTA -->
     <div v-else class="list-group list-group-flush">
       <div
-        v-for="alumno in alumnosFiltrados"
+        v-for="alumno in alumnosPaginados"
         :key="alumno.id"
         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 hover-card mb-2"
         @click="verDetalleAlumno(alumno.id)"
         role="button"
-        tabindex="0"
-        @keypress.enter="verDetalleAlumno(alumno.id)"
       >
         <div class="d-flex align-items-center">
           <div class="avatar-circle me-3">
@@ -116,11 +141,44 @@ const verDetalleAlumno = (alumnoId: number) => {
       </div>
     </div>
 
-    <!-- Contador -->
-    <div v-if="!isLoading && alumnos.length > 0" class="mt-3">
-      <small class="text-muted">
-        Mostrando {{ alumnosFiltrados.length }} de {{ alumnos.length }} alumno(s)
-      </small>
+    <!-- PAGINACIÓN PRO -->
+    <div
+      v-if="totalPages > 1"
+      class="d-flex justify-content-between align-items-center mt-4 px-2 gap-2"
+    >
+      <button
+        class="btn btn-outline-secondary btn-sm"
+        :disabled="currentPage === 1"
+        @click="currentPage--"
+      >
+        <i class="bi bi-chevron-left me-1"></i>
+        Anterior
+      </button>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small">
+          Página <strong>{{ currentPage }}</strong> de {{ totalPages }}
+        </span>
+
+        <input
+          type="number"
+          class="form-control form-control-sm page-input"
+          v-model.number="goToPageInput"
+          :min="1"
+          :max="totalPages"
+          placeholder="Ir"
+          @keyup.enter="goToPage"
+        />
+      </div>
+
+      <button
+        class="btn btn-outline-secondary btn-sm"
+        :disabled="currentPage === totalPages"
+        @click="currentPage++"
+      >
+        Siguiente
+        <i class="bi bi-chevron-right ms-1"></i>
+      </button>
     </div>
   </div>
 </template>
@@ -131,25 +189,19 @@ const verDetalleAlumno = (alumnoId: number) => {
 }
 
 .avatar-circle {
-  width: 45px;
-  height: 45px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #81045f 0%,
-    #4a90e2 100%
-  );
+  background: linear-gradient(135deg, #81045f, #4a90e2);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.2rem;
-  flex-shrink: 0;
 }
 
 .hover-card {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   border-left: 3px solid transparent;
   border-radius: 0.5rem;
 }
@@ -158,7 +210,11 @@ const verDetalleAlumno = (alumnoId: number) => {
   background-color: var(--bs-primary);
   color: white;
   border-left-color: #4a90e2;
-  transform: translateX(5px);
+  transform: translateX(4px);
+}
+
+.page-input {
+  width: 70px;
 }
 
 .input-group-text {
