@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder {
             FamiliaProfesionalSeeder::class,
             CentroFamiliaProfesionalSeeder::class,
             CicloSeeder::class,
-            CursoSeeder::class,
+            // CursoSeeder::class,
 
             EmpresaSeeder::class,
 

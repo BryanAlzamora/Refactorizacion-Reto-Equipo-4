@@ -5,114 +5,128 @@ import { useAuthStore } from "@/stores/auth";
 const authStore = useAuthStore();
 
 const userRole = computed(() => authStore.currentUser?.role);
-const userId = computed(() => authStore.currentUser.id);
-
+const userId = computed(() => authStore.currentUser?.id);
 </script>
 
 <template>
-  <aside class="sidebar island">
-    <!-- Menú para Alumnos -->
-    <nav v-if="userRole === 'alumno'" class="sidebar-nav">
-      <div class="sidebar-section">
-        <h3>
-          <RouterLink to="/alumno/inicio" class="sidebar-title">Inicio</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/alumno/mis-datos" class="sidebar-title">Mis Datos</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/alumno/empresa" class="sidebar-title">Empresa</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/alumno/seguimiento" class="sidebar-title">Entrega</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink :to="`/alumno/${userId}/calificacion`" class="sidebar-title">Calificación</RouterLink>
-        </h3>
-      </div>
-    </nav>
+  <aside class="sidebar card shadow-sm border-0">
+    <div class="card-body p-3">
 
-    <!-- Menú para Tutores -->
-    <nav v-else-if="userRole === 'tutor_egibide'" class="sidebar-nav">
-      <div class="sidebar-section">
-        <h3>
-          <RouterLink to="/tutor_egibide/inicio" class="sidebar-title">Inicio</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/tutor_egibide/alumnos" class="sidebar-title">Mis Alumnos</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/tutor_egibide/empresas" class="sidebar-title">Empresas</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/tutor_egibide/crear-estancia" class="sidebar-title">Estancia</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/tutor_egibide/grados" class="sidebar-title">Mis Grados</RouterLink>
-        </h3>
-      </div>
-    </nav>
+      <!-- ALUMNO -->
+      <nav v-if="userRole === 'alumno'">
+        <h6 class="text-uppercase text-muted mb-3">Alumno</h6>
+        <ul class="nav flex-column gap-1">
+          <li class="nav-item">
+            <RouterLink to="/alumno/inicio" class="nav-link">Inicio</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/alumno/mis-datos" class="nav-link">Mis Datos</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/alumno/empresa" class="nav-link">Empresa</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/alumno/seguimiento" class="nav-link">Entrega</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink
+              :to="`/alumno/${userId}/calificacion`"
+              class="nav-link fw-semibold"
+            >
+              Calificación
+            </RouterLink>
+          </li>
+        </ul>
+      </nav>
 
-    <!-- Menú para Empresas -->
-    <nav v-else-if="userRole === 'tutor_empresa'" class="sidebar-nav">
-      <div class="sidebar-section">
-        <h3>
-          <RouterLink to="/tutor_empresa/inicio" class="sidebar-title">Inicio</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/tutor_empresa/alumnos-asignados" class="sidebar-title">Alumnos Asignados</RouterLink>
-        </h3>
-      </div>
-    </nav>
+      <!-- TUTOR EGIBIDE -->
+      <nav v-else-if="userRole === 'tutor_egibide'">
+        <h6 class="text-uppercase text-muted mb-3">Tutor Egibide</h6>
+        <ul class="nav flex-column gap-1">
+          <li class="nav-item">
+            <RouterLink to="/tutor_egibide/inicio" class="nav-link">Inicio</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/tutor_egibide/alumnos" class="nav-link">Mis Alumnos</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/tutor_egibide/empresas" class="nav-link">Empresas</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/tutor_egibide/crear-estancia" class="nav-link">Estancia</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/tutor_egibide/grados" class="nav-link">Mis Grados</RouterLink>
+          </li>
+        </ul>
+      </nav>
 
-    <!-- Menú para Admin -->
-    <nav v-else-if="userRole === 'admin'" class="sidebar-nav">
-      <div class="sidebar-section">
-        <h3>
-          <RouterLink to="/admin/inicio" class="sidebar-title">Inicio</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/ciclos" class="sidebar-title">Ciclos</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/competencias" class="sidebar-title">Competencias</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/alumnos" class="sidebar-title">Alumnos</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/empresas" class="sidebar-title">Empresas</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/matriz-competencias" class="sidebar-title">Competencias vs Ras</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/nuevo-ciclo" class="sidebar-title">Ciclo</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/nueva-competencia" class="sidebar-title">Competencia</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/nueva-empresa" class="sidebar-title">Empresa</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/nuevo-alumno" class="sidebar-title">Alumno</RouterLink>
-        </h3>
-        <h3>
-          <RouterLink to="/admin/importar" class="sidebar-title">Importar Datos</RouterLink>
-        </h3>
-      </div>
-    </nav>
+      <!-- TUTOR EMPRESA -->
+      <nav v-else-if="userRole === 'tutor_empresa'">
+        <h6 class="text-uppercase text-muted mb-3">Empresa</h6>
+        <ul class="nav flex-column gap-1">
+          <li class="nav-item">
+            <RouterLink to="/tutor_empresa/inicio" class="nav-link">Inicio</RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/tutor_empresa/alumnos-asignados" class="nav-link">
+              Alumnos Asignados
+            </RouterLink>
+          </li>
+        </ul>
+      </nav>
 
-    <!-- Menú por defecto -->
-    <nav v-else class="sidebar-nav">
-      <div class="sidebar-section">
-        <p class="text-muted text-center py-4 mb-0">
-          No se ha identificado el tipo de usuario
-        </p>
+      <!-- ADMIN -->
+      <nav v-else-if="userRole === 'admin'">
+        <h6 class="text-uppercase text-muted mb-3">Administrador</h6>
+        <ul class="nav flex-column gap-1">
+          <li class="nav-item" v-for="(item, i) in [
+            ['/admin/inicio','Inicio'],
+            ['/admin/ciclos','Ciclos'],
+            ['/admin/competencias','Competencias'],
+            ['/admin/alumnos','Alumnos'],
+            ['/admin/empresas','Empresas'],
+            ['/admin/matriz-competencias','Competencias vs Ras'],
+            ['/admin/nuevo-ciclo','Nuevo Ciclo'],
+            ['/admin/nueva-competencia','Nueva Competencia'],
+            ['/admin/nueva-empresa','Nueva Empresa'],
+            ['/admin/nuevo-alumno','Nuevo Alumno'],
+            ['/admin/importar','Importar Datos']
+          ]" :key="i">
+            <RouterLink :to="item[0]" class="nav-link">
+              {{ item[1] }}
+            </RouterLink>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- DEFAULT -->
+      <div v-else class="text-center text-muted py-4">
+        <i class="bi bi-exclamation-circle fs-4"></i>
+        <p class="mt-2 mb-0">Usuario no identificado</p>
       </div>
-    </nav>
+
+    </div>
   </aside>
 </template>
 
-<style scoped></style>
+<style scoped>
+.sidebar {
+  min-height: 100vh;
+  border-radius: 1rem;
+}
+
+.nav-link {
+  border-radius: 0.5rem;
+  color: #495057;
+}
+
+.nav-link:hover {
+  background-color: #f1f3f5;
+}
+
+.router-link-active {
+  background-color: #0d6efd;
+  color: #fff !important;
+}
+</style>

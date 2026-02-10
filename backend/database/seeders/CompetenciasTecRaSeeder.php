@@ -127,7 +127,7 @@ class CompetenciasTecRaSeeder extends Seeder {
 
                     if (!$competenciaId) continue;
 
-                    DB::table('competencias_tec_ra')->insert([
+                    DB::table('competencia_tec_ra')->insert([
                         'competencia_tec_id' => $competenciaId,
                         'resultado_aprendizaje_id' => $raId,
                         'created_at' => now(),

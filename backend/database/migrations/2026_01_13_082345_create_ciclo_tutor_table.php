@@ -9,9 +9,9 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('curso_tutor', function (Blueprint $table) {
+        Schema::create('ciclo_tutor', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('curso_id')->constrained('cursos')->onDelete('cascade');
+            $table->foreignId('ciclo_id')->constrained('ciclos')->onDelete('cascade');
             $table->foreignId('tutor_id')->constrained('tutores')->onDelete('cascade');
             $table->timestamps();
         });
@@ -21,6 +21,6 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('curso_tutor');
+        Schema::dropIfExists('ciclo_tutor');
     }
 };

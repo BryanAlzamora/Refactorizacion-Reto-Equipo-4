@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Ciclos extends Model {
 
     protected $table = 'ciclos';
+
     protected $fillable = [
-        'codigo',
         'nombre',
-        'familia_profesional_id'
+        'familia_profesional_id',
+        'grupo'  // Este es el identificador único del grupo/ciclo
     ];
 
     /**
@@ -24,6 +26,7 @@ class Ciclos extends Model {
 
     /**
      * Get all cursos for this ciclo
+     * NOTA: Verifica si realmente necesitas esta relación
      */
     public function cursos(): HasMany {
         return $this->hasMany(Curso::class, 'ciclo_id');
@@ -43,11 +46,23 @@ class Ciclos extends Model {
         return $this->hasMany(CompetenciaTec::class);
     }
 
-    public function tutores(){
-        return $this->belongsToMany(TutorEgibide::class,'ciclo_tutor','curso_id','tutor_id');
+    /**
+     * Tutores asignados a este ciclo
+     */
+    public function tutores(): BelongsToMany {
+        return $this->belongsToMany(
+            TutorEgibide::class,
+            'ciclo_tutor',
+            'ciclo_id',
+            'tutor_id'
+        )->withTimestamps();
     }
 
-    public function alumnos(){
-        return $this->hasMany(Alumnos::class,'curso_id','id');
+    /**
+     * Alumnos de este ciclo/grupo
+     * La relación se hace a través del campo 'grupo' que es único
+     */
+    public function alumnos(): HasMany {
+        return $this->hasMany(Alumnos::class, 'grupo', 'grupo');
     }
 }

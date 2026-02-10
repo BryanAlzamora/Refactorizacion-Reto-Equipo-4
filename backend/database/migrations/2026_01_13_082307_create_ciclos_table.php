@@ -12,11 +12,11 @@ return new class extends Migration {
         Schema::create('ciclos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('codigo')->unique();
             $table->foreignId('familia_profesional_id')
                 ->constrained('familias_profesionales')
                 ->restrictOnDelete()->cascadeOnUpdate();
             $table->timestamps();
+            $table->string('grupo',5)->unique()->nullable();
 
             $table->unique(['familia_profesional_id', 'nombre']);
         });

@@ -26,15 +26,41 @@ class TutorEgibide extends Model {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Ciclos a los que pertenece este tutor
+     */
+    public function ciclos(): BelongsToMany {
+        return $this->belongsToMany(
+            Ciclos::class,
+            'ciclo_tutor',
+            'tutor_id',
+            'ciclo_id'
+        )->withTimestamps();
+    }
 
-    public function cursos(){
-        return $this->belongsToMany(Curso::class,'curso_tutor','tutor_id','curso_id');
+    /**
+     * Asignaturas que imparte este tutor
+     */
+    public function asignaturas(): BelongsToMany {
+        return $this->belongsToMany(
+            Asignatura::class,
+            'tutor_asignatura',
+            'tutor_id',
+            'asignatura_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Alumnos asignados directamente a este tutor
+     */
+    public function alumnos(): HasMany {
+        return $this->hasMany(Alumnos::class, 'tutor_id', 'id');
     }
 
     /**
      * Alumnos con datos de la estancia (pivot)
      */
-    public function alumnosConEstancia() {
+    public function alumnosConEstancia(): BelongsToMany {
         return $this->belongsToMany(
             Alumnos::class,
             'estancias',
@@ -53,7 +79,7 @@ class TutorEgibide extends Model {
     }
 
     /**
-     * Familias profesionales a los que pertenece este tutor
+     * Familias profesionales a las que pertenece este tutor
      */
     public function familias(): BelongsToMany {
         return $this->belongsToMany(
@@ -64,7 +90,16 @@ class TutorEgibide extends Model {
         )->withTimestamps();
     }
 
-    public function alumnos(){
-        return $this->hasMany(Alumnos::class,'tutor_id','id');
+    /**
+     * Cursos relacionados (si aplica)
+     * NOTA: Verifica si realmente necesitas esta relación o si deberías usar 'ciclos'
+     */
+    public function cursos(): BelongsToMany {
+        return $this->belongsToMany(
+            Curso::class,
+            'curso_tutor',
+            'tutor_id',
+            'curso_id'
+        )->withTimestamps();
     }
 }

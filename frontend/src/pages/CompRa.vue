@@ -1,7 +1,7 @@
-<script>
-import CompRa from '@/components/CompRa.vue';
+<script setup>
+ import CompVsRa from '@/components/CompVsRa.vue'
 </script>
 
 <template>
-    <CompRa/>
+    <CompVsRa/>
 </template>

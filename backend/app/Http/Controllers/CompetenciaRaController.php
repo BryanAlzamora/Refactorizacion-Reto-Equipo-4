@@ -14,15 +14,15 @@ class CompetenciaRaController extends Controller
     /**
      * Obtiene las competencias técnicas de un ciclo y las asignaturas con sus RAs.
      */
-    public function getCompRa($cicloId)
+    public function getCompRa($id)
     {
         // 1. Obtener Competencias Técnicas asociadas al Ciclo
         // Basado en: 2026_01_13_082408_create_competencias_tec_table.php
-        $competencias = CompetenciaTec::where('ciclo_id', $cicloId)->get();
+        $competencias = CompetenciaTec::where('ciclo_id', $id)->get();
 
         // 2. Obtener Asignaturas del Ciclo con sus RAs y las relaciones pivote
         // Asumimos que Asignatura tiene 'ciclo_id' o una relación para filtrar por ciclo.
-        $asignaturas = Asignatura::where('ciclo_id', $cicloId)
+        $asignaturas = Asignatura::where('ciclo_id', $id)
             ->with([
                 // Cargamos los Resultados de Aprendizaje (antiguos RAs)
                 'resultadosAprendizaje' => function ($query) {
@@ -35,7 +35,7 @@ class CompetenciaRaController extends Controller
                     ]);
                 }
             ])
-            ->orderBy('nombre')
+            ->orderBy('nombre_asignatura')
             ->get();
 
         return response()->json([
@@ -58,14 +58,14 @@ class CompetenciaRaController extends Controller
 
         // Usamos DB::table directamente para manejar el pivote 'competencias_tec_ra'
         // ya que es una tabla intermedia pura sin modelo propio usualmente.
-        $existing = DB::table('competencias_tec_ra')
+        $existing = DB::table('competencia_tec_ra')
             ->where('competencia_tec_id', $data['competencia_tec_id'])
             ->where('resultado_aprendizaje_id', $data['resultado_aprendizaje_id'])
             ->first();
 
         if ($existing) {
             // Eliminar relación
-            DB::table('competencias_tec_ra')
+            DB::table('competencia_tec_ra')
                 ->where('competencia_tec_id', $data['competencia_tec_id'])
                 ->where('resultado_aprendizaje_id', $data['resultado_aprendizaje_id'])
                 ->delete();
@@ -79,7 +79,7 @@ class CompetenciaRaController extends Controller
         // Crear relación
         // Basado en: 2026_01_13_082422_create_competencias_tec_ra_table.php
         // (Usa timestamps, así que añadimos created_at y updated_at)
-        DB::table('competencias_tec_ra')->insert(array_merge($data, [
+        DB::table('competencia_tec_ra')->insert(array_merge($data, [
             'created_at' => now(),
             'updated_at' => now()
         ]));

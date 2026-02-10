@@ -23,7 +23,6 @@ const subirAlumnos = async () => {
   formData.append("file", archivoAlumnos.value);
 
   try {
-    console.log("Subiendo archivo de alumnos:", archivoAlumnos.value);
     const response = await axios.post(
       `${baseURL}/api/importar-alumnos`,
       formData,

@@ -4,19 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\ImportacionService;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 use Exception;
+
 class ImportacionController extends Controller
 {
     protected $importService;
 
-    public function __construct(ImportacionService $importService) {
+    public function __construct(ImportacionService $importService)
+    {
         $this->importService = $importService;
     }
 
-    public function upload(Request $request) {
-        dd($request->all());
+    // En ImportacionController.php
+    public function upload(Request $request)
+    {
         $request->validate([
-            'file' => 'required|mimes:csv,txt,xlsx,xls'
+            'file' => 'required|mimes:csv,txt,xlsx' // Quita xlsx,xls temporalmente
         ]);
 
         try {
@@ -33,7 +38,8 @@ class ImportacionController extends Controller
             ], 422);
         }
     }
-     public function uploadAsignaciones(Request $request) {
+    public function uploadAsignaciones(Request $request)
+    {
         $request->validate([
             'file' => 'required|mimes:csv,txt,xlsx,xls'
         ]);
