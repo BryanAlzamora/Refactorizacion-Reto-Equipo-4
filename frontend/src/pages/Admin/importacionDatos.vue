@@ -6,7 +6,14 @@ import { useAuthStore } from "@/stores/auth";
 const authStore = useAuthStore();
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-//alumnos
+/* =====================
+   SWITCH DE VISTA
+===================== */
+const vistaActiva = ref<"alumnos" | "asignaciones">("alumnos");
+
+/* =====================
+   ALUMNOS
+===================== */
 const archivoAlumnos = ref<File | null>(null);
 const isImportingAlumnos = ref(false);
 
@@ -43,7 +50,9 @@ const subirAlumnos = async () => {
   }
 };
 
-//asignaciones
+/* =====================
+   ASIGNACIONES
+===================== */
 const archivoAsignaciones = ref<File | null>(null);
 const isImportingAsignaciones = ref(false);
 
@@ -82,58 +91,134 @@ const subirAsignaciones = async () => {
 </script>
 
 <template>
-  <div class="card mb-4 shadow-sm card-small-text">
-    <div class="card-body d-flex justify-content-between align-items-center">
-      <h3 class="mb-0">Importar Alumnos</h3>
+  <!-- SWITCH -->
+  <div class="d-flex justify-content-center mb-4">
+    <div class="btn-group">
+      <button
+        class="btn"
+        :class="vistaActiva === 'alumnos' ? 'btn-primary' : 'btn-outline-primary'"
+        @click="vistaActiva = 'alumnos'"
+      >
+        <i class="bi bi-people-fill me-1"></i>
+        Alumnos
+      </button>
 
+      <button
+        class="btn"
+        :class="vistaActiva === 'asignaciones' ? 'btn-primary' : 'btn-outline-primary'"
+        @click="vistaActiva = 'asignaciones'"
+      >
+        <i class="bi bi-diagram-3-fill me-1"></i>
+        Asignaciones
+      </button>
+    </div>
+  </div>
+
+  <!-- AVISO WARNING (FUERA DE LA CARD) -->
+  <div
+    v-if="vistaActiva === 'alumnos'"
+    class="alert alert-warning d-flex align-items-center mb-3 shadow-sm aviso-previo"
+    role="alert"
+  >
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <span>
+      Antes de importar alumnos, se recomienda añadir primero las
+      <strong>asignaciones</strong>.
+    </span>
+  </div>
+
+  <!-- CARD ALUMNOS -->
+  <div v-if="vistaActiva === 'alumnos'" class="card shadow-sm import-card">
+    <div class="card-body d-flex justify-content-between align-items-center">
       <div>
+        <h4 class="mb-1">
+          <i class="bi bi-people-fill me-2"></i>
+          Importar Alumnos
+        </h4>
+        <small class="text-muted">
+          Archivo Excel (.xls o .xlsx)
+        </small>
+      </div>
+
+      <div class="text-end">
         <input
           type="file"
-          class="form-control mb-2"
+          class="form-control form-control-sm mb-2"
           @change="handleFileAlumnos"
           accept=".xls, .xlsx"
         />
 
-        <button v-if="archivoAlumnos"
-          type="button"
-          class="btn btn-primary"
+        <button
+          class="btn btn-primary btn-sm w-100"
+          :disabled="!archivoAlumnos || isImportingAlumnos"
           @click="subirAlumnos"
-
-          >
-        <span
-          v-if="isImportingAlumnos"
-          class="spinner-border spinner-border-sm me-2"
-        ></span>
-          {{ isImportingAlumnos ? "Procesando..." : "Subir Archivo" }}
+        >
+          <span
+            v-if="isImportingAlumnos"
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
+          {{ isImportingAlumnos ? "Procesando..." : "Subir archivo" }}
         </button>
-
       </div>
     </div>
   </div>
-  <div class="card mb-4 shadow-sm card-small-text">
+
+  <!-- CARD ASIGNACIONES -->
+  <div v-if="vistaActiva === 'asignaciones'" class="card shadow-sm import-card">
     <div class="card-body d-flex justify-content-between align-items-center">
-      <h3 class="mb-0">Importar Asignaciones</h3>
-
       <div>
+        <h4 class="mb-1">
+          <i class="bi bi-diagram-3-fill me-2"></i>
+          Importar Asignaciones
+        </h4>
+        <small class="text-muted">
+          Archivo CSV
+        </small>
+      </div>
+
+      <div class="text-end">
         <input
-            type="file"
-            class="form-control mb-2"
-            @change="handleFileAsignaciones"
-            accept=".csv"
-          />
+          type="file"
+          class="form-control form-control-sm mb-2"
+          @change="handleFileAsignaciones"
+          accept=".csv"
+        />
 
-          <button v-if ="archivoAsignaciones"
-            type="button"
-            class="btn btn-primary"
-            @click="subirAsignaciones"            >
-            <span
-              v-if="isImportingAsignaciones"
-              class="spinner-border spinner-border-sm me-2"
-            ></span>
-            {{ isImportingAsignaciones ? "Procesando..." : "Subir Archivo" }}
-          </button>
-
+        <button
+          class="btn btn-primary btn-sm w-100"
+          :disabled="!archivoAsignaciones || isImportingAsignaciones"
+          @click="subirAsignaciones"
+        >
+          <span
+            v-if="isImportingAsignaciones"
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
+          {{ isImportingAsignaciones ? "Procesando..." : "Subir archivo" }}
+        </button>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.import-card {
+  border-left: 4px solid #0d6efd;
+  animation: fade 0.25s ease-in;
+}
+
+.aviso-previo {
+  border-left: 4px solid #ffc107;
+  background-color: #fff8e1;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
