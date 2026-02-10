@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('tutor_id')->nullable();
             $table->string('dni', 10)->unique();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
-            $table->string('grupo',5)->nullable();
+            $table->string('grupo',6)->nullable();
 
             $table->foreign('grupo')
                 ->references('grupo') // la columna de la tabla 'ciclos' a la que quieres apuntar

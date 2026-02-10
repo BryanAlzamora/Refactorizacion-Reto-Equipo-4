@@ -8,6 +8,7 @@ use App\Models\Ciclos;
 use App\Models\Alumnos;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\UploadedFile;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Exception;
@@ -343,32 +344,56 @@ class ImportacionService {
      * Importa alumnos desde archivo Excel
      *
      * Estructura esperada:
-     * DNI ALUMNO | EMAIL ALUMNO | NOMBRE ALUMNO | APELLIDO1 ALUMNO | APELLIDO2 ALUMNO | MATRICULA ALUMNO | GRUPO
+     * APELLIDO1 ALUMNO | APELLIDO2 ALUMNO | NOMBRE ALUMNO | CLASE | MATRICULA ALUMNO | DNI ALUMNO | ID PERSONA | EMAIL ALUMNO
      */
     public function importar(UploadedFile $file): array {
+        Log::info('=== INICIO IMPORTACIÓN ===');
+        Log::info('Archivo: ' . $file->getClientOriginalName());
+
         $extension = $file->getClientOriginalExtension();
         $data = [];
         $header = [];
 
         if (in_array($extension, ['xlsx', 'xls'])) {
+            Log::info('Procesando archivo EXCEL');
+
             // Lógica para EXCEL
             $spreadsheet = IOFactory::load($file->getRealPath());
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
 
             $header = array_shift($rows);
-            foreach ($rows as $row) {
-                // Saltar filas vacías
-                if (empty($row[0]) || $row[0] === null) {
+
+            // **CORRECCIÓN: Limpiar headers de espacios y BOM**
+            $header = array_map(function($h) {
+                return trim(preg_replace('/^[\xEF\xBB\xBF\xFF\xFE]/', '', (string)$h));
+            }, $header);
+
+            Log::info('Headers encontrados:', $header);
+            Log::info('Total filas en Excel: ' . count($rows));
+
+            foreach ($rows as $rowIndex => $row) {
+                // Saltar filas completamente vacías
+                if (empty(array_filter($row))) {
+                    Log::debug("Fila " . ($rowIndex + 2) . " vacía, saltando");
                     continue;
                 }
+
+                // **CORRECCIÓN: Convertir valores numéricos a string**
+                $row = array_map(function($val) {
+                    return is_numeric($val) ? (string)$val : $val;
+                }, $row);
 
                 // Verificar que hay suficientes columnas
                 if (count($row) >= count($header)) {
                     $data[] = array_combine($header, array_slice($row, 0, count($header)));
+                } else {
+                    Log::warning("Fila " . ($rowIndex + 2) . " tiene menos columnas que el header");
                 }
             }
         } else {
+            Log::info('Procesando archivo CSV');
+
             // Lógica para CSV
             $content = file_get_contents($file->getRealPath());
             $encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
@@ -381,6 +406,8 @@ class ImportacionService {
             $header = str_getcsv(array_shift($lines), $delimiter);
             $header[0] = preg_replace('/^[\xEF\xBB\xBF\xFF\xFE]/', '', $header[0]);
 
+            Log::info('Headers encontrados:', $header);
+
             foreach ($lines as $line) {
                 if (empty(trim($line))) continue;
 
@@ -391,21 +418,35 @@ class ImportacionService {
             }
         }
 
+        Log::info('Total filas procesadas para importar: ' . count($data));
+
+        if (count($data) > 0) {
+            Log::info('Primera fila de datos:', $data[0]);
+        }
+
         return DB::transaction(function () use ($data, $header) {
             if (in_array('DNI ALUMNO', $header)) {
+                Log::info('Detectado formato de ALUMNOS');
                 return $this->procesarAlumnos($data);
             }
             if (in_array('Alias_Profesor', $header)) {
+                Log::info('Detectado formato de ASIGNACIONES');
                 return $this->procesarAsignaciones($data);
             }
+
+            Log::error('Formato no reconocido. Headers:', $header);
             throw new Exception("Formato de columnas no reconocido. Se esperaba 'DNI ALUMNO' o 'Alias_Profesor' en el encabezado.");
         });
     }
 
     /**
      * Procesa los datos de alumnos
+     * **CORREGIDO: Acepta tanto GRUPO como CLASE**
      */
     private function procesarAlumnos(array $data): array {
+        Log::info('=== PROCESANDO ALUMNOS ===');
+        Log::info('Total filas a procesar: ' . count($data));
+
         $stats = [
             'usuarios_creados' => 0,
             'usuarios_actualizados' => 0,
@@ -417,9 +458,13 @@ class ImportacionService {
 
         foreach ($data as $index => $row) {
             try {
+                Log::debug("=== Procesando fila " . ($index + 2) . " ===");
+
                 // Validar campos obligatorios
                 if (empty($row['DNI ALUMNO']) || empty($row['EMAIL ALUMNO'])) {
-                    $stats['errores'][] = "Fila " . ($index + 2) . ": DNI o EMAIL vacío";
+                    $error = "Fila " . ($index + 2) . ": DNI o EMAIL vacío";
+                    Log::warning($error);
+                    $stats['errores'][] = $error;
                     continue;
                 }
 
@@ -428,10 +473,79 @@ class ImportacionService {
                 $nombre = trim($row['NOMBRE ALUMNO'] ?? '');
                 $apellido1 = trim($row['APELLIDO1 ALUMNO'] ?? '');
                 $apellido2 = trim($row['APELLIDO2 ALUMNO'] ?? '');
-                $matricula = trim($row['MATRICULA ALUMNO'] ?? '');
-                $grupo = trim($row['GRUPO'] ?? null);
+
+                Log::debug("DNI: $dni, Email: $email");
+
+                // **CORRECCIÓN: Convertir MATRICULA a string y validar**
+                $matricula = isset($row['MATRICULA ALUMNO']) && $row['MATRICULA ALUMNO'] !== ''
+                    ? (string)$row['MATRICULA ALUMNO']
+                    : null;
+
+                if (!$matricula) {
+                    $error = "Fila " . ($index + 2) . ": MATRICULA vacía (DNI: $dni)";
+                    Log::warning($error);
+                    $stats['errores'][] = $error;
+                    continue;
+                }
+
+                Log::debug("Matricula: $matricula");
+
+                // **CORRECCIÓN: Acepta CLASE o GRUPO**
+                $grupo = trim($row['CLASE'] ?? $row['GRUPO'] ?? '');
+
+                Log::debug("Grupo/Clase: '$grupo' (longitud: " . strlen($grupo) . ")");
+
+                // **IMPORTANTE: Validar longitud del grupo**
+                if (strlen($grupo) > 10) {
+                    $error = "Fila " . ($index + 2) . ": GRUPO/CLASE demasiado largo: '$grupo' (DNI: $dni)";
+                    Log::warning($error);
+                    $stats['errores'][] = $error;
+                    continue;
+                }
+
+                // **NUEVO: Crear el ciclo si no existe (igual que en procesarAsignaciones)**
+                if ($grupo) {
+                    $ciclo = Ciclos::where('grupo', $grupo)->first();
+
+                    if (!$ciclo) {
+                        Log::info("Creando ciclo para grupo: $grupo");
+
+                        // Obtener familia profesional por defecto
+                        $familiaPorDefecto = DB::table('familias_profesionales')->first();
+
+                        if (!$familiaPorDefecto) {
+                            $error = "Fila " . ($index + 2) . ": No hay familias profesionales en la BD (DNI: $dni)";
+                            Log::error($error);
+                            $stats['errores'][] = $error;
+                            continue;
+                        }
+
+                        try {
+                            Ciclos::create([
+                                'nombre' => "Ciclo $grupo", // Nombre genérico
+                                'familia_profesional_id' => $familiaPorDefecto->id,
+                                'grupo' => $grupo
+                            ]);
+                            Log::info("✓ Ciclo creado: $grupo");
+                        } catch (\Illuminate\Database\QueryException $e) {
+                            // Si falla por duplicate key (otro proceso lo creó justo ahora), continuar
+                            if ($e->getCode() == 23000) {
+                                Log::info("Ciclo $grupo ya existe (creado por otro proceso)");
+                            } else {
+                                $error = "Fila " . ($index + 2) . ": Error al crear ciclo '$grupo': " . $e->getMessage();
+                                Log::error($error);
+                                $stats['errores'][] = $error;
+                                continue;
+                            }
+                        }
+                    } else {
+                        Log::debug("Ciclo '$grupo' ya existe con ID: {$ciclo->id}");
+                    }
+                }
 
                 // 1. Crear o actualizar Usuario
+                Log::debug("Creando/actualizando usuario...");
+
                 $user = User::updateOrCreate(
                     ['email' => $email],
                     [
@@ -442,12 +556,17 @@ class ImportacionService {
 
                 if ($user->wasRecentlyCreated) {
                     $stats['usuarios_creados']++;
+                    Log::debug("Usuario creado con ID: {$user->id}");
                 } else {
                     $stats['usuarios_actualizados']++;
+                    Log::debug("Usuario actualizado con ID: {$user->id}");
                 }
 
                 // 2. Crear o actualizar Alumno
                 $apellidos = trim($apellido1 . ' ' . $apellido2);
+
+                Log::debug("Creando/actualizando alumno...");
+                Log::debug("Datos: nombre=$nombre, apellidos=$apellidos, matricula=$matricula, grupo=$grupo");
 
                 $alumno = Alumnos::updateOrCreate(
                     ['dni' => $dni],
@@ -456,22 +575,30 @@ class ImportacionService {
                         'nombre' => $nombre,
                         'apellidos' => $apellidos,
                         'matricula_id' => $matricula,
-                        'grupo' => $grupo
+                        'grupo' => $grupo ?: null // Si está vacío, guardar null
                     ]
                 );
 
                 if ($alumno->wasRecentlyCreated) {
                     $stats['alumnos_creados']++;
+                    Log::info("✓ Alumno creado: DNI=$dni, ID={$alumno->id}");
                 } else {
                     $stats['alumnos_actualizados']++;
+                    Log::info("✓ Alumno actualizado: DNI=$dni, ID={$alumno->id}");
                 }
 
                 $stats['filas_procesadas']++;
 
             } catch (Exception $e) {
-                $stats['errores'][] = "Fila " . ($index + 2) . ": " . $e->getMessage();
+                $error = "Fila " . ($index + 2) . ": " . $e->getMessage() . " (DNI: " . ($dni ?? 'N/A') . ")";
+                Log::error($error);
+                Log::error("Stack trace: " . $e->getTraceAsString());
+                $stats['errores'][] = $error;
             }
         }
+
+        Log::info('=== RESUMEN PROCESAMIENTO ALUMNOS ===');
+        Log::info('Stats:', $stats);
 
         return $stats;
     }
