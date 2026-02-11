@@ -9,7 +9,7 @@ use App\Models\NotaCuaderno;
 
 class AlumnoEntrega extends Model
 {
-    protected $table = 'cuadernos_practicas';
+    protected $table = 'alumno_entrega';
 
     protected $fillable = [
         'url_entrega',

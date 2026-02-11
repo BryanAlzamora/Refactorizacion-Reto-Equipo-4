@@ -9,25 +9,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
-class AlumnosController extends Controller {
+class AlumnosController extends Controller
+{
     /**
      * Display a listing of the resource.
      */
-    public function index() {
+    public function index()
+    {
         return Alumnos::all();
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create() {
+    public function create()
+    {
         //
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $validated = $request->validate([
             'nombre' => ['required'],
             'apellidos' => ['required'],
@@ -77,7 +81,8 @@ class AlumnosController extends Controller {
         ], 201);
     }
 
-    public function inicio(Request $request) {
+    public function inicio(Request $request)
+    {
         $user = $request->user();
 
         $alumno = $user->alumno;
@@ -153,7 +158,8 @@ class AlumnosController extends Controller {
         ]);
     }
 
-    public function me() {
+    public function me()
+    {
         $userId = auth()->id();
 
         $row = Alumnos::join('users', 'alumnos.user_id', '=', 'users.id')
@@ -164,6 +170,7 @@ class AlumnosController extends Controller {
                 'alumnos.ciudad',
 
                 'users.email',
+                'alumnos.id',
             )
             ->where('alumnos.user_id', $userId)
             ->first();
@@ -175,7 +182,8 @@ class AlumnosController extends Controller {
         return response()->json($row);
     }
 
-    public function getAsignaturasAlumno($alumno_id) {
+    public function getAsignaturasAlumno($alumno_id)
+    {
         $estancia = Estancia::where('alumno_id', $alumno_id)
             ->with('curso.ciclo.asignaturas')
             ->firstOrFail();
@@ -185,7 +193,8 @@ class AlumnosController extends Controller {
         return response()->json($asignaturas, 200);
     }
 
-    public function entregas($alumnoId) {
+    public function entregas($alumnoId)
+    {
         $entregas = DB::table('entregas')
             ->join('cuadernos_practicas', 'entregas.cuaderno_practicas_id', '=', 'cuadernos_practicas.id')
             ->join('estancias', 'cuadernos_practicas.estancia_id', '=', 'estancias.id')

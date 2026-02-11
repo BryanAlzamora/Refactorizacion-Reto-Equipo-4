@@ -1,4 +1,4 @@
-import type { EntregaCuaderno } from "./EntregaCuaderno";
+import type { Alumno } from "./Alumno";
 
 export interface AlumnoEntrega {
   id: number;
@@ -8,5 +8,5 @@ export interface AlumnoEntrega {
   entrega_id: number;
   observaciones?: string;
   feedback?: 'Bien' | 'Regular' | 'Debe mejorar';
-  entrega?: EntregaCuaderno;
+  alumno: Alumno;
 }
