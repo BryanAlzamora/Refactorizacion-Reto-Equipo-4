@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Asignatura extends Model {
+class Asignatura extends Model
+{
 
     protected $table = 'asignaturas';
 
@@ -19,14 +21,16 @@ class Asignatura extends Model {
     /**
      * Obtener el ciclo al que pertenece la asignatura
      */
-    public function ciclo(): BelongsTo {
+    public function ciclo(): BelongsTo
+    {
         return $this->belongsTo(Ciclos::class, 'ciclo_id');
     }
 
     /**
      * Obtener los tutores que imparten esta asignatura
      */
-    public function tutores(): BelongsToMany {
+    public function tutores(): BelongsToMany
+    {
         return $this->belongsToMany(
             TutorEgibide::class,
             'tutor_asignatura',
@@ -38,7 +42,17 @@ class Asignatura extends Model {
     /**
      * Obtener las notas de los alumnos en esta asignatura
      */
-    public function notasAsignatura() {
+    public function notasAsignatura()
+    {
         return $this->hasMany(NotaAsignatura::class, 'asignatura_id');
+    }
+
+    public function resultadosAprendizaje(): HasMany
+    {
+        return $this->hasMany(
+            ResultadoAprendizaje::class,
+            'asignatura_id',
+            'id'
+        );
     }
 }

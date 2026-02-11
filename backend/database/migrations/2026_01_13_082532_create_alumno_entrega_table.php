@@ -9,15 +9,20 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('notas_cuaderno', function (Blueprint $table) {
+        Schema::create('alumno_entrega', function (Blueprint $table) {
             $table->id();
-            $table->decimal('nota', 4, 2)->nullable();
+            $table->string('url_entrega', 255);
+            $table->date('fecha_entrega');
             $table->foreignId('alumno_id')
                 ->constrained('alumnos')
                 ->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('entrega_id')
+                ->constrained('entrega_cuaderno')
+                ->cascadeOnDelete()->cascadeOnUpdate();
+            $table->text('observaciones')->nullable();
+            $table->enum('feedback',['Bien', 'Regular', 'Debe mejorar'])->nullable();
             $table->timestamps();
 
-            $table->unique(['alumno_id']);
         });
     }
 
@@ -25,6 +30,6 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('notas_cuaderno');
+        Schema::dropIfExists('cuadernos_practicas');
     }
 };

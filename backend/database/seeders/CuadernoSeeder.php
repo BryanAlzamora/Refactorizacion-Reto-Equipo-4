@@ -1,35 +1,54 @@
 <?php
 
 namespace Database\Seeders;
-
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CuadernoSeeder extends Seeder {
+    /**
+     * Run the migrations.
+     */
     public function run(): void {
-        DB::table('cuadernos_practicas')->insert([
+        DB::table('entrega_cuaderno')->insert([
             [
-                'archivo' => null,
-                'archivo_vacio' => 'plantilla_cuaderno.pdf',
-                'estancia_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'fecha_creacion' => now()->subDays(10)->toDateString(),
+                'fecha_limite'   => now()->addDays(7)->toDateString(),
+                'tutor_id'       => 1, // Debe existir en la tabla tutores
+                'descripcion'    => 'Primera entrega del cuaderno de prácticas',
+                'created_at'     => now(),
+                'updated_at'     => now(),
             ],
         ]);
 
-        DB::table('entregas')->insert([
+        // 2️⃣ Creamos el cuaderno entregado por el alumno
+        DB::table('alumno_entrega')->insert([
             [
-                'archivo' => 'entrega_1.pdf',
-                'fecha' => now()->subDays(7)->toDateString(),
-                'cuaderno_practicas_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'url_entrega'    => 'cuaderno_entrega_1.pdf',
+                'fecha_entrega'  => now()->subDays(2)->toDateString(),
+                'alumno_id'      => 1, // Debe existir en la tabla alumnos
+                'entrega_id'     => 1, // ID de entrega_cuaderno creada arriba
+                'observaciones'  => 'Buen trabajo general, mejorar redacción.',
+                'feedback'       => 'Bien',
+                'created_at'     => now(),
+                'updated_at'     => now(),
             ],
         ]);
-
         DB::table('notas_cuaderno')->insert([
-            ['nota' => 8.50, 'cuaderno_practicas_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            [
+                'nota' => 8.50,
+                'alumno_id' => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
         ]);
     }
-}
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('entregas');
+    }
+};

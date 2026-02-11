@@ -10,7 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Models\TutorEgibide;
 use App\Models\Estancia;
 use App\Models\Empresas;
-
+use App\Models\EntregaCuaderno;
 
 class TutorEgibideController extends Controller
 {
@@ -208,5 +208,16 @@ class TutorEgibideController extends Controller
             ->get();
 
         return response()->json($cursos);
+    }
+
+    public function getEntregasByCurrentTutor(Request $req, $tutorId)
+    {
+        $entregas = EntregaCuaderno::with([
+            'entregas.alumno'
+        ])
+            ->where('tutor_id', $tutorId)
+            ->get();
+
+        return response()->json($entregas);
     }
 }

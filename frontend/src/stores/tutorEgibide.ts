@@ -4,6 +4,7 @@ import type { Empresa } from "@/interfaces/Empresa";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useAuthStore } from "./auth";
+import type { EntregaCuaderno } from "@/interfaces/EntregaCuaderno";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,6 +12,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   const alumnosAsignados = ref<Alumno[]>([]);
   const empresasAsignadas = ref<Empresa[]>([]);
   const misCursos = ref<Curso[]>([]);
+  const entregas = ref<EntregaCuaderno[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -200,7 +202,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   }
 
   // Guardar horario y periodo de alumno
-    async function guardarHorarioAlumno(
+  async function guardarHorarioAlumno(
     alumnoId: number,
     fechaInicio: string,
     fechaFin: string | null,
@@ -270,12 +272,12 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     }
   }
 
-    async function guardarHorarioSemanal(
+  async function guardarHorarioSemanal(
     estanciaId: number,
     horarios: Array<{
       dia_semana: string;
       tramos: Array<{ hora_inicio: string; hora_fin: string }>;
-    }>
+    }>,
   ) {
     try {
       const response = await fetch(`${baseURL}/api/horario/asignar`, {
@@ -294,17 +296,11 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(
-          data.message || "Error al asignar el horario",
-          "error"
-        );
+        setMessage(data.message || "Error al asignar el horario", "error");
         return false;
       }
 
-      setMessage(
-        data.message || "Horario asignado correctamente",
-        "success"
-      );
+      setMessage(data.message || "Horario asignado correctamente", "success");
       return true;
     } catch (err) {
       console.error(err);
@@ -312,7 +308,6 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       return false;
     }
   }
-
 
   async function updateAlumnoEmpresa(alumnoId: number, empresaId: number) {
     const alumnoToUpdate = alumnosAsignados.value.find(
@@ -331,6 +326,38 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       if (estancia) {
         estancia.empresa_id = empresaId;
       }
+    }
+  }
+
+  async function fetchEntregas(tutorId: string) {
+    loading.value = true;
+
+    try {
+      const response = await fetch(
+        `${baseURL}/api/tutorEgibide/${tutorId}/entregas`,
+        {
+          headers: {
+            Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+            Accept: "application/json",
+          },
+        },
+      );
+
+      const data = await response.json();
+      console.log(data);
+      if (!response.ok) {
+        setMessage(data.message || "Error al cargar entregas", "error");
+        return false;
+      }
+
+      entregas.value = data as EntregaCuaderno[];
+      return true;
+    } catch (err) {
+      console.error(err);
+      setMessage("Error de conexión al obtener entregas", "error");
+      return false;
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -353,5 +380,6 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     setMessage,
     fetchAlumnosDeMiCursoSinTutorAsignado,
     asignarAlumnoATutor,
+    fetchEntregas,
   };
 });

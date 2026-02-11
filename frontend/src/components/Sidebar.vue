@@ -53,7 +53,7 @@ const userId = computed(() => authStore.currentUser?.id);
             <RouterLink to="/tutor_egibide/empresas" class="nav-link">Empresas</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink to="/tutor_egibide/crear-estancia" class="nav-link">Estancia</RouterLink>
+            <RouterLink to="/tutor_egibide/mis-entregas" class="nav-link">Mis Entregas</RouterLink>
           </li>
           <li class="nav-item">
             <RouterLink to="/tutor_egibide/grados" class="nav-link">Mis Grados</RouterLink>

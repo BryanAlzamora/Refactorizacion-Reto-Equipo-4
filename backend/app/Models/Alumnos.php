@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Estancia;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Alumnos extends Model {
     protected $fillable = [
@@ -46,5 +47,13 @@ class Alumnos extends Model {
     }
     public function tutor(): BelongsTo{
         return $this->belongsTo(TutorEgibide::class,'tutor_id','id');
+    }
+
+    public function entregasCuaderno(): HasMany {
+        return $this->hasMany(CuadernoPracticas::class,'alumno_id','id');
+    }
+
+    public function notaCuaderno(): HasOne {
+        return $this->hasOne(NotaCuaderno::class,'alumno_id','id');
     }
 }
