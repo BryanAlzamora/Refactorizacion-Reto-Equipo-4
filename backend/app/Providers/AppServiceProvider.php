@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('is-admin', fn(User $user) => $user->role === 'admin');
 
         // 3. Gates Compartidos (CORREGIDO PARA TU ERROR ACTUAL)
-Gate::define('gestionar-competencias', function ($user) {
+        Gate::define('gestionar-competencias', function ($user) {
             return in_array($user->role, ['admin', 'tutor_egibide', 'tutor_empresa']);
         });
         // AQUÍ ESTÁ EL CAMBIO PRINCIPAL: Añadido 'alumno'

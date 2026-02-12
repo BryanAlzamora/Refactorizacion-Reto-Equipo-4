@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AlumnoEntrega;
 use App\Models\Alumnos;
 use App\Models\Estancia;
 use App\Models\User;
@@ -191,15 +192,17 @@ class AlumnosController extends Controller
     }
 
     public function entregas($alumnoId)
-    {
-        $entregas = DB::table('entregas')
-            ->join('cuadernos_practicas', 'entregas.cuaderno_practicas_id', '=', 'cuadernos_practicas.id')
-            ->join('estancias', 'cuadernos_practicas.estancia_id', '=', 'estancias.id')
-            ->where('estancias.alumno_id', $alumnoId)
-            ->select('entregas.id', 'entregas.archivo', 'entregas.fecha')
-            ->orderBy('entregas.fecha', 'desc')
-            ->get();
+{
+    // Usamos el modelo Eloquent en lugar de DB::table
+    $entregas = AlumnoEntrega::where('alumno_id', $alumnoId)
+        ->select(
+            'id', 
+            'URL_Cuaderno as archivo',  // Mapeamos al nombre que espera tu frontend
+            'Fecha_Entrega as fecha'    // Mapeamos al nombre que espera tu frontend
+        )
+        ->orderBy('Fecha_Entrega', 'desc')
+        ->get();
 
-        return response()->json($entregas);
-    }
+    return response()->json($entregas);
+}
 }

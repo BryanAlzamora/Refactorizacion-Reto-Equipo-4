@@ -11,6 +11,7 @@ use App\Models\TutorEgibide;
 use App\Models\Estancia;
 use App\Models\Empresas;
 use App\Models\EntregaCuaderno;
+use App\Models\TutorEmpresa;
 
 class TutorEgibideController extends Controller
 {
@@ -236,6 +237,7 @@ class TutorEgibideController extends Controller
             'apellidos' => 'required|string|max:255',
             'telefono' => 'nullable|string|max:20',
             'ciudad' => 'nullable|string|max:255',
+            'user_id' => 'nullable|exists:users,id'
         ]);
 
         try {
@@ -259,7 +261,7 @@ class TutorEgibideController extends Controller
                     'telefono' => $validated['telefono'] ?? null,
                     'ciudad' => $validated['ciudad'] ?? null,
                     'empresa_id' => $validated['empresa_id'],
-                    'user_id' => null, // Se puede asignar después si es necesario
+                    'user_id' => $validated['user_id'] || null, // Se puede asignar después si es necesario
                 ]);
                 $mensaje = 'Instructor creado correctamente';
             }
