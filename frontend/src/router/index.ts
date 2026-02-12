@@ -81,14 +81,7 @@ const router = createRouter({
           },
           meta: { role: "tutor_egibide" },
         },
-        {
-          path: "tutor_egibide/empresas",
-          name: "tutor_egibide-empresas",
-          components: {
-            main: () => import("@/pages/TutorEgibide/empresas.vue"),
-          },
-          meta: { role: "tutor_egibide" },
-        },
+        
         {
             path: "tutor_egibide/mis-entregas",
           name: "tutor_egibide-mis-entregas",
@@ -170,8 +163,8 @@ const router = createRouter({
           meta: { role: "tutor_egibide" },
         },
         {
-          name: "tutor_egibide-empresas_asignadas",
-          path: "tutor_egibide/empresa-asignados",
+          name: "tutor_egibide-empresas",
+          path: "tutor_egibide/empresas",
           components: {
             main: () => import("@/pages/TutorEgibide/empresas.vue"),
           },
@@ -179,7 +172,7 @@ const router = createRouter({
         },
         {
           name: "tutor_egibide-detalle_empresa",
-          path: "tutor_egibide/empresa-asignados/:empresaId",
+          path: "tutor_egibide/empresas/:empresaId",
           components: {
             main: () => import("@/pages/TutorEgibide/detallesEmpresa.vue"),
           },

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Empresa } from "@/interfaces/Empresa";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useTutorEgibideStore } from "@/stores/tutorEgibide";
 
 interface Instructor {
   id: number;
@@ -19,6 +20,7 @@ interface EmpresaDetalle extends Empresa {
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const tutorEgibideStore = useTutorEgibideStore();
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -26,7 +28,17 @@ const empresa = ref<EmpresaDetalle | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
-// Obtener parámetros de la ruta
+// Modal de instructor
+const showInstructorModal = ref(false);
+const instructorForm = ref({
+  nombre: "",
+  apellidos: "",
+  telefono: "",
+  ciudad: "",
+});
+const isEditingInstructor = ref(false);
+const isSavingInstructor = ref(false);
+
 const empresaId = Number(route.params.empresaId);
 
 onMounted(async () => {
@@ -62,6 +74,50 @@ const cargarDetalleEmpresa = async () => {
   }
 };
 
+const abrirModalInstructor = () => {
+  if (empresa.value?.instructores && empresa.value.instructores.length > 0) {
+    // Modo edición
+    const instructor = empresa.value.instructores[0];
+    instructorForm.value = {
+      nombre: instructor.nombre,
+      apellidos: instructor.apellidos,
+      telefono: instructor.telefono || "",
+      ciudad: instructor.ciudad || "",
+    };
+    isEditingInstructor.value = true;
+  } else {
+    // Modo creación
+    instructorForm.value = {
+      nombre: "",
+      apellidos: "",
+      telefono: "",
+      ciudad: "",
+    };
+    isEditingInstructor.value = false;
+  }
+  showInstructorModal.value = true;
+};
+
+const guardarInstructor = async () => {
+  isSavingInstructor.value = true;
+  
+  const success = await tutorEgibideStore.asignarInstructor(
+    empresaId,
+    instructorForm.value
+  );
+
+  isSavingInstructor.value = false;
+
+  if (success) {
+    showInstructorModal.value = false;
+    await cargarDetalleEmpresa(); // Recargar datos
+  }
+};
+
+const cerrarModal = () => {
+  showInstructorModal.value = false;
+};
+
 const volver = () => {
   router.back();
 };
@@ -69,6 +125,29 @@ const volver = () => {
 
 <template>
   <div class="container mt-4">
+    <!-- Mensajes -->
+    <div
+      v-if="tutorEgibideStore.message"
+      :class="[
+        'alert',
+        tutorEgibideStore.messageType === 'success' ? 'alert-success' : 'alert-danger',
+        'd-flex',
+        'align-items-center'
+      ]"
+      role="alert"
+    >
+      <i
+        :class="[
+          'bi',
+          tutorEgibideStore.messageType === 'success'
+            ? 'bi-check-circle-fill'
+            : 'bi-exclamation-triangle-fill',
+          'me-2'
+        ]"
+      ></i>
+      <div>{{ tutorEgibideStore.message }}</div>
+    </div>
+
     <!-- Estado de carga -->
     <div v-if="isLoading" class="text-center py-5">
       <div class="spinner-border" style="color: #81045f;" role="status">
@@ -163,17 +242,34 @@ const volver = () => {
       </div>
 
       <!-- Instructores -->
-      <div v-if="empresa.instructores && empresa.instructores.length > 0">
-        <h4 class="mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">
           <i class="bi bi-person-badge-fill me-2"></i>
-          {{ empresa.instructores.length === 1 ? 'Instructor' : 'Instructores' }}
+          Instructor
         </h4>
+        <button
+          class="btn btn-primary"
+          @click="abrirModalInstructor"
+        >
+          <i
+            :class="[
+              'bi',
+              empresa.instructores && empresa.instructores.length > 0
+                ? 'bi-pencil-fill'
+                : 'bi-plus-circle-fill',
+              'me-2'
+            ]"
+          ></i>
+          {{ empresa.instructores && empresa.instructores.length > 0 ? 'Modificar' : 'Añadir' }} Instructor
+        </button>
+      </div>
 
+      <div v-if="empresa.instructores && empresa.instructores.length > 0">
         <div class="row g-3">
           <div
             v-for="instructor in empresa.instructores"
             :key="instructor.id"
-            class="col-md-6"
+            class="col-12"
           >
             <div class="card h-100 shadow-sm instructor-card">
               <div class="card-body">
@@ -205,9 +301,108 @@ const volver = () => {
       </div>
 
       <!-- Mensaje si no hay instructores -->
-      <div v-else class="alert alert-info mt-3">
+      <div v-else class="alert alert-info">
         <i class="bi bi-info-circle-fill me-2"></i>
-        No hay instructores asignados a esta empresa actualmente.
+        No hay instructor asignado a esta empresa. Haz clic en "Añadir Instructor" para agregar uno.
+      </div>
+    </div>
+
+    <!-- Modal de Instructor -->
+    <div
+      v-if="showInstructorModal"
+      class="modal fade show d-block"
+      tabindex="-1"
+      style="background-color: rgba(0,0,0,0.5);"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {{ isEditingInstructor ? 'Modificar' : 'Añadir' }} Instructor
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              @click="cerrarModal"
+              :disabled="isSavingInstructor"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="guardarInstructor">
+              <div class="mb-3">
+                <label for="nombre" class="form-label">
+                  Nombre <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nombre"
+                  v-model="instructorForm.nombre"
+                  required
+                  :disabled="isSavingInstructor"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="apellidos" class="form-label">
+                  Apellidos <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="apellidos"
+                  v-model="instructorForm.apellidos"
+                  required
+                  :disabled="isSavingInstructor"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="telefono" class="form-label">Teléfono</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="telefono"
+                  v-model="instructorForm.telefono"
+                  :disabled="isSavingInstructor"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="ciudad" class="form-label">Ciudad</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="ciudad"
+                  v-model="instructorForm.ciudad"
+                  :disabled="isSavingInstructor"
+                />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="cerrarModal"
+              :disabled="isSavingInstructor"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="guardarInstructor"
+              :disabled="isSavingInstructor"
+            >
+              <span
+                v-if="isSavingInstructor"
+                class="spinner-border spinner-border-sm me-2"
+              ></span>
+              {{ isEditingInstructor ? 'Actualizar' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -218,11 +413,8 @@ const volver = () => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #81045f 0%,
-    #2c3e50 100%
-  );  display: flex;
+  background: linear-gradient(135deg, #81045f 0%, #2c3e50 100%);
+  display: flex;
   align-items: center;
   justify-content: center;
   color: white;
@@ -234,12 +426,8 @@ const volver = () => {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #81045f 0%,
-    #2c3e50 100%
-  );  display: flex;
-  align-items: center;
+  background: linear-gradient(135deg, #81045f 0%, #2c3e50 100%);
+  display: flex;
   justify-content: center;
   color: white;
   font-size: 1.8rem;
@@ -277,5 +465,9 @@ const volver = () => {
 .instructor-info .info-item {
   background-color: transparent;
   padding: 0.5rem 0;
+}
+
+.modal.show {
+  display: block;
 }
 </style>

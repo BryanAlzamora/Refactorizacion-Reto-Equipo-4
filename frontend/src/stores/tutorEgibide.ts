@@ -11,6 +11,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL;
 export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   const alumnosAsignados = ref<Alumno[]>([]);
   const empresasAsignadas = ref<Empresa[]>([]);
+  const todasLasEmpresas = ref<Empresa[]>([]); // NUEVO
   const misCursos = ref<Curso[]>([]);
   const entregas = ref<EntregaCuaderno[]>([]);
   const loading = ref(false);
@@ -68,7 +69,8 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       loading.value = false;
     }
   }
-  // Traer alumnos asignados
+
+  // Traer empresas asignadas
   async function fetchEmpresasAsignadas(tutorId: string) {
     loading.value = true;
     try {
@@ -99,6 +101,86 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       return false;
     } finally {
       loading.value = false;
+    }
+  }
+
+  // NUEVO: Traer todas las empresas del sistema
+  async function fetchTodasLasEmpresas() {
+    loading.value = true;
+    try {
+      const response = await fetch(
+        `${baseURL}/api/tutorEgibide/todas-empresas`,
+        {
+          headers: {
+            Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+            Accept: "application/json",
+          },
+        },
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        setMessage(
+          data.message || "Error desconocido al cargar empresas",
+          "error",
+        );
+        return false;
+      }
+
+      todasLasEmpresas.value = data as Empresa[];
+      return true;
+    } catch (err) {
+      console.error(err);
+      setMessage("Error de conexión al obtener todas las empresas", "error");
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // NUEVO: Asignar o actualizar instructor de una empresa
+  async function asignarInstructor(
+    empresaId: number,
+    instructorData: {
+      nombre: string;
+      apellidos: string;
+      telefono?: string;
+      ciudad?: string;
+    }
+  ) {
+    try {
+      const response = await fetch(
+        `${baseURL}/api/tutorEgibide/asignar-instructor`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            empresa_id: empresaId,
+            ...instructorData,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(
+          data.message || "Error al asignar instructor",
+          "error"
+        );
+        return false;
+      }
+
+      setMessage(data.message || "Instructor asignado correctamente", "success");
+      return true;
+    } catch (err) {
+      console.error(err);
+      setMessage("Error de conexión al asignar instructor", "error");
+      return false;
     }
   }
 
@@ -161,7 +243,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
         return false;
       }
 
-      setMessage(`Alumno asignado correctamente`, "success");
+      setMessage("Alumno asignado correctamente", "success");
       return true;
     } catch (err) {
       console.error(err);
@@ -364,6 +446,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   return {
     alumnosAsignados,
     empresasAsignadas,
+    todasLasEmpresas, // NUEVO
     misCursos,
     loading,
     error,
@@ -371,9 +454,12 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     messageType,
     inicio,
     loadingInicio,
+    entregas,
     fetchInicioTutor,
     fetchAlumnosAsignados,
     fetchEmpresasAsignadas,
+    fetchTodasLasEmpresas, // NUEVO
+    asignarInstructor, // NUEVO
     guardarHorarioAlumno,
     guardarHorarioSemanal,
     updateAlumnoEmpresa,

@@ -220,4 +220,60 @@ class TutorEgibideController extends Controller
 
         return response()->json($entregas);
     }
+
+    public function conseguirTodasLasEmpresas(Request $request)
+    {
+        $empresas = Empresas::all();
+        return response()->json($empresas);
+    }
+
+    // Método para asignar/actualizar instructor en una empresa
+    public function asignarInstructor(Request $request)
+    {
+        $validated = $request->validate([
+            'empresa_id' => 'required|exists:empresas,id',
+            'nombre' => 'required|string|max:255',
+            'apellidos' => 'required|string|max:255',
+            'telefono' => 'nullable|string|max:20',
+            'ciudad' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            // Verificar si ya existe un instructor para esta empresa
+            $instructor = TutorEmpresa::where('empresa_id', $validated['empresa_id'])->first();
+
+            if ($instructor) {
+                // Actualizar instructor existente
+                $instructor->update([
+                    'nombre' => $validated['nombre'],
+                    'apellidos' => $validated['apellidos'],
+                    'telefono' => $validated['telefono'] ?? null,
+                    'ciudad' => $validated['ciudad'] ?? null,
+                ]);
+                $mensaje = 'Instructor actualizado correctamente';
+            } else {
+                // Crear nuevo instructor
+                $instructor = TutorEmpresa::create([
+                    'nombre' => $validated['nombre'],
+                    'apellidos' => $validated['apellidos'],
+                    'telefono' => $validated['telefono'] ?? null,
+                    'ciudad' => $validated['ciudad'] ?? null,
+                    'empresa_id' => $validated['empresa_id'],
+                    'user_id' => null, // Se puede asignar después si es necesario
+                ]);
+                $mensaje = 'Instructor creado correctamente';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $mensaje,
+                'instructor' => $instructor
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al asignar instructor: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
