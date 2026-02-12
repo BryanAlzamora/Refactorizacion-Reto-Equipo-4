@@ -7,6 +7,7 @@ use App\Http\Controllers\CiclosController;
 use App\Http\Controllers\CompetenciasController;
 use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\AlumnosController;
+use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\FamiliaProfesionalController;
 use App\Http\Controllers\NotasController;
 use App\Http\Controllers\TutorEgibideController;
@@ -36,12 +37,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // ========================================
 
     Route::middleware('can:is-admin')->group(function () {
-        
+
         // --- ESTAS SON LAS RUTAS QUE TE FALTABAN ---
         Route::get('/admin/inicio', [AdminController::class, 'inicioAdmin']);
         Route::get('/admin/alumnos/{id}', [AdminController::class, 'detalleAlumno']);
         Route::get('/admin/empresas/{empresaId}', [AdminController::class, 'detalleEmpresa']);
-        
+
         Route::post('/importar-alumnos', [ImportacionController::class, 'upload']);
         Route::post('/importar-asignaciones', [ImportacionController::class, 'uploadAsignaciones']);
         // -------------------------------------------
@@ -193,6 +194,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('can:gestionar-horarios')->group(function () {
         Route::post('/horario/asignar', [HorarioController::class, 'asignarHorario']);
         Route::get('/horario/{idEstancia}', [HorarioController::class, 'getHorario']);
+
+        // Instructores
+        Route::get('/instructores', [InstructorController::class, 'index']);
+        Route::post('/instructores', [InstructorController::class, 'store']);
+        Route::get('/instructores/{id}', [InstructorController::class, 'show']);
+        Route::put('/instructores/{id}', [InstructorController::class, 'update']);
+        Route::delete('/instructores/{id}', [InstructorController::class, 'destroy']);
     });
 
     // ========================================

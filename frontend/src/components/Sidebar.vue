@@ -58,6 +58,11 @@ const userId = computed(() => authStore.currentUser?.id);
           <li class="nav-item">
             <RouterLink to="/tutor_egibide/grados" class="nav-link">Mis Grados</RouterLink>
           </li>
+           <li class="nav-item">
+            <RouterLink to="/tutor_egibide/instructores" class="nav-link">
+              Instructores
+            </RouterLink>
+          </li>
         </ul>
       </nav>
 

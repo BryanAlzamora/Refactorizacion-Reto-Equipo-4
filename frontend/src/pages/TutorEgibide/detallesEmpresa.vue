@@ -1,71 +1,46 @@
 <script setup lang="ts">
 import type { Empresa } from "@/interfaces/Empresa";
+import type { Instructor } from "@/interfaces/Instructor";
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import { useTutorEgibideStore } from "@/stores/tutorEgibide";
-
-interface Instructor {
-  id: number;
-  nombre: string;
-  apellidos: string;
-  telefono: string | null;
-  ciudad: string | null;
-}
-
-interface EmpresaDetalle extends Empresa {
-  instructores?: Instructor[];
-}
+import { useInstructorStore } from "@/stores/instructor";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const tutorEgibideStore = useTutorEgibideStore();
-
+const instructorStore = useInstructorStore();
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-const empresa = ref<EmpresaDetalle | null>(null);
+const empresa = ref<Empresa | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+const todosInstructores = ref<Instructor[]>([]);
 
-// Modal de instructor
-const showInstructorModal = ref(false);
-const instructorForm = ref({
-  nombre: "",
-  apellidos: "",
-  telefono: "",
-  ciudad: "",
-});
-const isEditingInstructor = ref(false);
-const isSavingInstructor = ref(false);
+// Modal de asignar instructor
+const showAsignarModal = ref(false);
+const selectedInstructorId = ref<number | null>(null);
 
 const empresaId = Number(route.params.empresaId);
 
 onMounted(async () => {
   await cargarDetalleEmpresa();
+  await cargarTodosInstructores();
 });
 
+// Cargar detalle de empresa
 const cargarDetalleEmpresa = async () => {
   isLoading.value = true;
   error.value = null;
-
   try {
-    const response = await fetch(
-      `${baseURL}/api/tutorEgibide/empresa/${empresaId}`,
-      {
-        headers: {
-          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
-          Accept: "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Error al cargar los datos de la empresa");
-    }
-
-    const data = await response.json();
-    empresa.value = data;
+    const response = await fetch(`${baseURL}/api/tutorEgibide/empresa/${empresaId}`, {
+      headers: {
+        Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+        Accept: "application/json",
+      },
+    });
+    if (!response.ok) throw new Error("Error al cargar los datos de la empresa");
+    empresa.value = await response.json();
   } catch (err) {
     console.error(err);
     error.value = "No se pudo cargar la información de la empresa";
@@ -74,83 +49,74 @@ const cargarDetalleEmpresa = async () => {
   }
 };
 
-const abrirModalInstructor = () => {
-  if (empresa.value?.instructores && empresa.value.instructores.length > 0) {
-    // Modo edición
-    const instructor = empresa.value.instructores[0];
-    instructorForm.value = {
-      nombre: instructor.nombre,
-      apellidos: instructor.apellidos,
-      telefono: instructor.telefono || "",
-      ciudad: instructor.ciudad || "",
-    };
-    isEditingInstructor.value = true;
-  } else {
-    // Modo creación
-    instructorForm.value = {
-      nombre: "",
-      apellidos: "",
-      telefono: "",
-      ciudad: "",
-    };
-    isEditingInstructor.value = false;
-  }
-  showInstructorModal.value = true;
+// Cargar todos los instructores
+const cargarTodosInstructores = async () => {
+  todosInstructores.value = await instructorStore.obtenerPorEmpresa(empresaId);
 };
 
-const guardarInstructor = async () => {
-  isSavingInstructor.value = true;
-  
-  const success = await tutorEgibideStore.asignarInstructor(
-    empresaId,
-    instructorForm.value
-  );
+// Abrir modal de asignación
+const abrirAsignarModal = () => {
+  selectedInstructorId.value = null;
+  showAsignarModal.value = true;
+};
 
-  isSavingInstructor.value = false;
+// Asignar o cambiar instructor
+const asignarInstructor = async () => {
+  if (!selectedInstructorId.value) return;
+  try {
+    const response = await fetch(
+      `${baseURL}/api/tutorEgibide/empresa/${empresaId}/asignar-instructor`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+        },
+        body: JSON.stringify({ instructor_id: selectedInstructorId.value }),
+      }
+    );
+    if (!response.ok) throw new Error("Error al asignar el instructor");
 
-  if (success) {
-    showInstructorModal.value = false;
-    await cargarDetalleEmpresa(); // Recargar datos
+    await cargarDetalleEmpresa();
+    instructorStore.setMessage("Instructor asignado correctamente", "success");
+    showAsignarModal.value = false;
+  } catch (err) {
+    console.error(err);
+    instructorStore.setMessage("No se pudo asignar el instructor", "error");
   }
 };
 
-const cerrarModal = () => {
-  showInstructorModal.value = false;
-};
-
-const volver = () => {
-  router.back();
-};
+const volver = () => router.back();
 </script>
 
 <template>
   <div class="container mt-4">
     <!-- Mensajes -->
     <div
-      v-if="tutorEgibideStore.message"
+      v-if="instructorStore.message"
       :class="[
         'alert',
-        tutorEgibideStore.messageType === 'success' ? 'alert-success' : 'alert-danger',
+        instructorStore.messageType === 'success' ? 'alert-success' : 'alert-danger',
         'd-flex',
-        'align-items-center'
+        'align-items-center',
       ]"
       role="alert"
     >
       <i
         :class="[
           'bi',
-          tutorEgibideStore.messageType === 'success'
+          instructorStore.messageType === 'success'
             ? 'bi-check-circle-fill'
             : 'bi-exclamation-triangle-fill',
-          'me-2'
+          'me-2',
         ]"
       ></i>
-      <div>{{ tutorEgibideStore.message }}</div>
+      <div>{{ instructorStore.message }}</div>
     </div>
 
     <!-- Estado de carga -->
     <div v-if="isLoading" class="text-center py-5">
-      <div class="spinner-border" style="color: #81045f;" role="status">
+      <div class="spinner-border" style="color: #81045f" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
       <p class="mt-3 text-muted fw-semibold">Cargando información de la empresa...</p>
@@ -161,9 +127,7 @@ const volver = () => {
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
       <div>
         {{ error }}
-        <button class="btn btn-sm btn-outline-danger ms-3" @click="volver">
-          Volver a empresas
-        </button>
+        <button class="btn btn-sm btn-outline-danger ms-3" @click="volver">Volver a empresas</button>
       </div>
     </div>
 
@@ -172,9 +136,7 @@ const volver = () => {
       <i class="bi bi-building-x me-2"></i>
       <div>
         No se encontró información de la empresa
-        <button class="btn btn-sm btn-outline-warning ms-3" @click="volver">
-          Volver
-        </button>
+        <button class="btn btn-sm btn-outline-warning ms-3" @click="volver">Volver</button>
       </div>
     </div>
 
@@ -185,13 +147,10 @@ const volver = () => {
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
             <a href="#" @click.prevent="volver" class="text-decoration-none">
-              <i class="bi bi-arrow-left me-1"></i>
-              Empresas
+              <i class="bi bi-arrow-left me-1"></i> Empresas
             </a>
           </li>
-          <li class="breadcrumb-item active" aria-current="page">
-            {{ empresa.nombre }}
-          </li>
+          <li class="breadcrumb-item active" aria-current="page">{{ empresa.nombre }}</li>
         </ol>
       </nav>
 
@@ -206,206 +165,77 @@ const volver = () => {
               <h3 class="mb-1">{{ empresa.nombre }}</h3>
             </div>
           </div>
-
-          <!-- Información adicional de la empresa -->
           <div class="row g-3 mt-2">
             <div class="col-md-6" v-if="empresa.telefono">
-              <div class="info-item">
-                <i class="bi bi-telephone-fill text-primary me-2"></i>
-                <span class="text-muted">Teléfono:</span>
-                <strong class="ms-2">{{ empresa.telefono }}</strong>
-              </div>
+              <div class="info-item"><i class="bi bi-telephone-fill text-primary me-2"></i><span class="text-muted">Teléfono:</span> <strong class="ms-2">{{ empresa.telefono }}</strong></div>
             </div>
             <div class="col-md-6" v-if="empresa.email">
-              <div class="info-item">
-                <i class="bi bi-envelope-fill text-primary me-2"></i>
-                <span class="text-muted">Email:</span>
-                <strong class="ms-2">{{ empresa.email }}</strong>
-              </div>
+              <div class="info-item"><i class="bi bi-envelope-fill text-primary me-2"></i><span class="text-muted">Email:</span> <strong class="ms-2">{{ empresa.email }}</strong></div>
             </div>
             <div class="col-md-6" v-if="empresa.cif">
-              <div class="info-item">
-                <i class="bi bi-card-text text-primary me-2"></i>
-                <span class="text-muted">CIF:</span>
-                <strong class="ms-2">{{ empresa.cif }}</strong>
-              </div>
+              <div class="info-item"><i class="bi bi-card-text text-primary me-2"></i><span class="text-muted">CIF:</span> <strong class="ms-2">{{ empresa.cif }}</strong></div>
             </div>
             <div class="col-md-12" v-if="empresa.direccion">
-              <div class="info-item">
-                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-                <span class="text-muted">Dirección:</span>
-                <strong class="ms-2">{{ empresa.direccion }}</strong>
-              </div>
+              <div class="info-item"><i class="bi bi-geo-alt-fill text-primary me-2"></i><span class="text-muted">Dirección:</span> <strong class="ms-2">{{ empresa.direccion }}</strong></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Instructores -->
+      <!-- Sección de instructores -->
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">
-          <i class="bi bi-person-badge-fill me-2"></i>
-          Instructor
-        </h4>
-        <button
-          class="btn btn-primary"
-          @click="abrirModalInstructor"
-        >
-          <i
-            :class="[
-              'bi',
-              empresa.instructores && empresa.instructores.length > 0
-                ? 'bi-pencil-fill'
-                : 'bi-plus-circle-fill',
-              'me-2'
-            ]"
-          ></i>
-          {{ empresa.instructores && empresa.instructores.length > 0 ? 'Modificar' : 'Añadir' }} Instructor
+        <h4 class="mb-0"><i class="bi bi-person-badge-fill me-2"></i>Instructores</h4>
+        <button class="btn btn-primary" @click="abrirAsignarModal">
+          <i class="bi bi-person-plus-fill me-2"></i> Asignar/Cambiar Instructor
         </button>
       </div>
 
+      <!-- Lista de instructores actuales -->
       <div v-if="empresa.instructores && empresa.instructores.length > 0">
-        <div class="row g-3">
-          <div
-            v-for="instructor in empresa.instructores"
-            :key="instructor.id"
-            class="col-12"
-          >
-            <div class="card h-100 shadow-sm instructor-card">
-              <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                  <div class="avatar-medium me-3">
-                    <i class="bi bi-person-fill"></i>
-                  </div>
-                  <div>
-                    <h5 class="mb-0">{{ instructor.nombre }} {{ instructor.apellidos }}</h5>
-                  </div>
-                </div>
-
-                <div class="instructor-info">
-                  <div v-if="instructor.telefono" class="info-item mb-2">
-                    <i class="bi bi-telephone-fill text-primary me-2"></i>
-                    <span class="text-muted">Teléfono:</span>
-                    <strong class="ms-2">{{ instructor.telefono }}</strong>
-                  </div>
-                  <div v-if="instructor.ciudad" class="info-item">
-                    <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-                    <span class="text-muted">Ciudad:</span>
-                    <strong class="ms-2">{{ instructor.ciudad }}</strong>
-                  </div>
-                </div>
+        <div v-for="instructor in empresa.instructores" :key="instructor.id" class="card shadow-sm instructor-card mb-3">
+          <div class="card-body d-flex align-items-center">
+            <div class="avatar-medium me-3"><i class="bi bi-person-fill"></i></div>
+            <div class="flex-grow-1">
+              <h5 class="mb-1">{{ instructor.nombre }} {{ instructor.apellidos }}</h5>
+              <div v-if="instructor.telefono || instructor.ciudad">
+                <small v-if="instructor.telefono" class="text-muted me-2"><i class="bi bi-telephone-fill me-1"></i>{{ instructor.telefono }}</small>
+                <small v-if="instructor.ciudad" class="text-muted"><i class="bi bi-geo-alt-fill me-1"></i>{{ instructor.ciudad }}</small>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Mensaje si no hay instructores -->
       <div v-else class="alert alert-info">
-        <i class="bi bi-info-circle-fill me-2"></i>
-        No hay instructor asignado a esta empresa. Haz clic en "Añadir Instructor" para agregar uno.
+        <i class="bi bi-info-circle-fill me-2"></i>No hay instructores asignados a esta empresa.
       </div>
-    </div>
 
-    <!-- Modal de Instructor -->
-    <div
-      v-if="showInstructorModal"
-      class="modal fade show d-block"
-      tabindex="-1"
-      style="background-color: rgba(0,0,0,0.5);"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              {{ isEditingInstructor ? 'Modificar' : 'Añadir' }} Instructor
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              @click="cerrarModal"
-              :disabled="isSavingInstructor"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="guardarInstructor">
-              <div class="mb-3">
-                <label for="nombre" class="form-label">
-                  Nombre <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="nombre"
-                  v-model="instructorForm.nombre"
-                  required
-                  :disabled="isSavingInstructor"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="apellidos" class="form-label">
-                  Apellidos <span class="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="apellidos"
-                  v-model="instructorForm.apellidos"
-                  required
-                  :disabled="isSavingInstructor"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="telefono" class="form-label">Teléfono</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="telefono"
-                  v-model="instructorForm.telefono"
-                  :disabled="isSavingInstructor"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="ciudad" class="form-label">Ciudad</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="ciudad"
-                  v-model="instructorForm.ciudad"
-                  :disabled="isSavingInstructor"
-                />
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              @click="cerrarModal"
-              :disabled="isSavingInstructor"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="guardarInstructor"
-              :disabled="isSavingInstructor"
-            >
-              <span
-                v-if="isSavingInstructor"
-                class="spinner-border spinner-border-sm me-2"
-              ></span>
-              {{ isEditingInstructor ? 'Actualizar' : 'Guardar' }}
-            </button>
+      <!-- Modal de asignar instructor -->
+      <div v-if="showAsignarModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Asignar o cambiar instructor</h5>
+              <button type="button" class="btn-close" @click="showAsignarModal = false"></button>
+            </div>
+            <div class="modal-body">
+              <select v-model="selectedInstructorId" class="form-select">
+                <option value="" disabled>Selecciona un instructor</option>
+                <option v-for="inst in todosInstructores" :key="inst.id" :value="inst.id">
+                  {{ inst.nombre }} {{ inst.apellidos }}
+                </option>
+              </select>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" @click="showAsignarModal = false">Cancelar</button>
+              <button class="btn btn-primary" :disabled="!selectedInstructorId" @click="asignarInstructor">
+                Guardar
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+    </div>
 </template>
 
 <style scoped>
@@ -419,55 +249,20 @@ const volver = () => {
   justify-content: center;
   color: white;
   font-size: 2.5rem;
-  flex-shrink: 0;
 }
-
 .avatar-medium {
   width: 60px;
   height: 60px;
   border-radius: 50%;
   background: linear-gradient(135deg, #81045f 0%, #2c3e50 100%);
   display: flex;
+  align-items: center;
   justify-content: center;
   color: white;
   font-size: 1.8rem;
-  flex-shrink: 0;
 }
-
-.instructor-card {
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.instructor-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
-  border-color: var(--bs-primary);
-}
-
-.breadcrumb-item a {
-  color: var(--bs-primary);
-}
-
-.breadcrumb-item a:hover {
-  color: var(--bs-primary);
-  text-decoration: underline !important;
-}
-
-.info-item {
-  padding: 0.75rem;
-  background-color: #f8f9fa;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.instructor-info .info-item {
-  background-color: transparent;
-  padding: 0.5rem 0;
-}
-
-.modal.show {
-  display: block;
-}
+.instructor-card { border-left: 4px solid #81045f; }
+.breadcrumb-item a { color: var(--bs-primary); }
+.breadcrumb-item a:hover { color: var(--bs-primary); text-decoration: underline !important; }
+.info-item { padding: 0.75rem; background-color: #f8f9fa; border-radius: 0.5rem; display: flex; align-items: center; }
 </style>
