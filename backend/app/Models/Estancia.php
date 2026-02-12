@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\CuadernoPracticas;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Estancia extends Model {
+class Estancia extends Model
+{
+
+    use HasFactory;
     protected $table = 'estancias';
 
     protected $fillable = [
@@ -30,70 +34,80 @@ class Estancia extends Model {
     /**
      * Get the alumno that owns this estancia
      */
-    public function alumno(): BelongsTo {
-        return $this->belongsTo(Alumnos::class,'alumno_id', 'id');
+    public function alumno(): BelongsTo
+    {
+        return $this->belongsTo(Alumnos::class, 'alumno_id', 'id');
     }
 
     /**
      * Get the tutor (TutorEgibide) for this estancia
      */
-    public function tutor(): BelongsTo {
+    public function tutor(): BelongsTo
+    {
         return $this->belongsTo(TutorEgibide::class, 'tutor_id', 'id');
     }
 
     /**
      * Get the instructor (TutorEmpresa) for this estancia
      */
-    public function instructor(): BelongsTo {
-        return $this->belongsTo(TutorEmpresa::class,'instructor_id', 'id');
+    public function instructor(): BelongsTo
+    {
+        return $this->belongsTo(TutorEmpresa::class, 'instructor_id', 'id');
     }
 
     /**
      * Get the empresa that owns this estancia
      */
-    public function empresa(): BelongsTo {
-        return $this->belongsTo(Empresas::class,'empresa_id');
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(Empresas::class, 'empresa_id');
     }
 
     /**
      * Get the curso for this estancia
      */
-    public function curso(): BelongsTo {
+    public function curso(): BelongsTo
+    {
         return $this->belongsTo(Curso::class);
     }
 
     /**
      * Get all notas competencia tec for this estancia
      */
-    public function notasCompetenciaTec(): HasMany {
+    public function notasCompetenciaTec(): HasMany
+    {
         return $this->hasMany(NotaCompetenciaTec::class);
     }
 
     /**
      * Get all notas competencia trans for this estancia
      */
-    public function notasCompetenciaTrans(): HasMany {
+    public function notasCompetenciaTrans(): HasMany
+    {
         return $this->hasMany(NotaCompetenciaTransversal::class);
     }
 
     /**
      * Get all seguimientos for this estancia
      */
-    public function seguimientos(): HasMany {
+    public function seguimientos(): HasMany
+    {
         return $this->hasMany(Seguimiento::class);
     }
 
     /**
      * Get all horarios dia for this estancia
      */
-    public function horariosDia(): HasMany {
+    public function horariosDia(): HasMany
+    {
         return $this->hasMany(HorarioDia::class);
     }
 
     /**
      * Get the cuaderno practicas for this estancia
      */
-    public function cuadernoPracticas(): HasOne {
-        return $this->hasOne(CuadernoPracticas::class,'estancia_id','id');
+    public function cuadernoPracticas(): HasOne
+    {
+        return $this->hasOne(CuadernoPracticas::class, 'estancia_id', 'id');
     }
 }

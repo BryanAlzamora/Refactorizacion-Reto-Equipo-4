@@ -50,7 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/ciclos', [CiclosController::class, 'store']);
         Route::post('/ciclos/importar', [CiclosController::class, 'importarCSV']);
         Route::get('/ciclos/plantilla', [CiclosController::class, 'descargarPlantillaCSV']);
-        Route::get('/admin/ciclos/{ciclo}', [CiclosController::class, 'show']);
+      Route::get('/admin/ciclos/{ciclo}', [CiclosController::class, 'show']);
+       Route::get('/ciclo/{ciclo_id}/tutores', [TutorEgibideController::class, 'getTutoresByCiclo']);
+        Route::get('/ciclo/{ciclo_id}/asignaturas', [CiclosController::class, 'getAsignaturasByCiclo']);
 
         // Competencias
         Route::post('/competencia/tecnica', [CompetenciasController::class, 'storeTecnica']);

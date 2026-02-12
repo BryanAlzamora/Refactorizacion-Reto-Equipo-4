@@ -123,7 +123,7 @@
                                                         class="mt-2 pt-2 border-top border-secondary-subtle">
                                                         <div v-if="e.feedback"
                                                             class="d-flex align-items-center gap-2 mb-1">
-                                                            <span class="badge bg-success">Nota: {{ e.feedback }}</span>
+                                                            <span class="badge" :class="fbgcolor(e.feedback)">Nota: {{ e.feedback }}</span>
                                                         </div>
                                                         <div v-if="e.observaciones"
                                                             class="small fst-italic text-dark bg-white p-2 rounded border">
@@ -188,8 +188,14 @@ const formatDateTime = (dateStr) => {
         day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
     });
 };
-
-const fileURL = (filename) => 
+const fbgcolor = (feedback) => {
+    switch (feedback) {
+        case 'Bien': return 'bg-success text-white';
+        case 'Regular': return 'bg-warning text-dark';
+        case 'Debe mejorar': return 'bg-danger text-white';
+    }
+}
+const fileURL = (filename) =>
     `${baseURL}/storage/entregas/${filename}`;
 const isPastDeadline = (fecha_limite) => new Date() > new Date(fecha_limite);
 </script>

@@ -20,7 +20,7 @@ class CiclosController extends Controller {
      * Display a listing of the resource.
      */
     public function index() {
-        return Ciclos::all();
+        return response()->json(Ciclos::all(), 200);
     }
 
     /**
@@ -80,18 +80,6 @@ class CiclosController extends Controller {
             ];
         })
     ]);
-    }
-
-    public function getCursosByCiclos($ciclo_id) {
-        $ciclo = Ciclos::find($ciclo_id);
-
-        if (!$ciclo) {
-            return response()->json(['message' => 'Ciclo no encontrado'], 404);
-        }
-
-        $cursos = $ciclo->cursos;
-
-        return response()->json($cursos, 200);
     }
 
     public function importarCSV(Request $request) {
