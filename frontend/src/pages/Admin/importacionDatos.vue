@@ -100,7 +100,7 @@ const subirAsignaciones = async () => {
         @click="vistaActiva = 'alumnos'"
       >
         <i class="bi bi-people-fill me-1"></i>
-        Alumnos
+        Datos
       </button>
 
       <button
@@ -122,7 +122,7 @@ const subirAsignaciones = async () => {
   >
     <i class="bi bi-exclamation-triangle-fill me-2"></i>
     <span>
-      Antes de importar alumnos, se recomienda añadir primero las
+      Antes de importar datos, se recomienda añadir primero las
       <strong>asignaciones</strong>.
     </span>
   </div>
@@ -133,7 +133,7 @@ const subirAsignaciones = async () => {
       <div>
         <h4 class="mb-1">
           <i class="bi bi-people-fill me-2"></i>
-          Importar Alumnos
+          Importar Datos
         </h4>
         <small class="text-muted">
           Archivo Excel (.xls o .xlsx)

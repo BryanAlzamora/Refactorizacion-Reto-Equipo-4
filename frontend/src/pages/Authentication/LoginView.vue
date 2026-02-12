@@ -53,7 +53,7 @@ function login() {
             <input
               type="password"
               class="form-control"
-              placeholder="Contrseña"
+              placeholder="Contraseña"
               v-model="passwd"
               aria-label="Contraseña"
               required
