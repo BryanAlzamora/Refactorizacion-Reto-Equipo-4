@@ -62,7 +62,6 @@ onMounted(async () => {
     // Asignaturas
     await alumnoStore.getAsignaturasAlumno(alumnoId.value);
     asignaturas.value = alumnoStore.asignaturas;
-
     // Notas técnicas
     const response = await competenciasStore.calcularNotasTecnicasByAlumno(alumnoId.value);
     notasTecnicas.value = response.notas_competenciasTec;
@@ -219,7 +218,7 @@ const puedeEditar = computed(() => props.modo === 'tutor');
             </thead>
             <tbody>
               <tr v-for="(asignatura, index) in asignaturas" :key="asignatura.id">
-                <td class="fw-bold">{{ asignatura.codigo_asignatura }}</td>
+                <td class="fw-bold text-start">{{ asignatura.nombre_asignatura }}</td>
                 <td>
                   <input
                     type="number"
