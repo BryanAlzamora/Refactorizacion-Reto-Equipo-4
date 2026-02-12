@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -68,6 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/competencia-tec-ra/toggle', [CompetenciaRaController::class, 'createOrDelete']);
         Route::post('/competenciasTecnicas/asignar-ra', [CompetenciaRaController::class, 'createOrDelete']);
+        Route::post('/ra', [RaController::class, 'store']);
+        Route::delete('/ra/{id}', [RaController::class, 'destroy']);
+
     });
 
     // ========================================

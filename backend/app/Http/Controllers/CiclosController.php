@@ -53,18 +53,17 @@ class CiclosController extends Controller {
             'familia_profesional' => $ciclo->familiaProfesional ? $ciclo->familiaProfesional->nombre : null,
         ]);
     }
-    public function getAsignaturasByCiclo($idCiclo) {
-    // Buscar el ciclo
+    public function getAsignaturasByCiclo($idCiclo)
+{
     $ciclo = Ciclos::find($idCiclo);
 
     if (!$ciclo) {
         return response()->json(['message' => 'Ciclo no encontrado'], 404);
     }
 
-    // Obtener todas las asignaturas del ciclo
-    $asignaturas = $ciclo->asignaturas;
+    // Cargar asignaturas con sus RAs
+    $asignaturas = $ciclo->asignaturas()->with('resultadosAprendizaje')->get();
 
-    // Retornar la información del ciclo junto con sus asignaturas
     return response()->json([
         'ciclo' => [
             'id' => $ciclo->id,
@@ -72,15 +71,22 @@ class CiclosController extends Controller {
             'familia_profesional_id' => $ciclo->familia_profesional_id,
             'familia_profesional' => $ciclo->familiaProfesional ? $ciclo->familiaProfesional->nombre : null,
         ],
-        'asignaturas' => $asignaturas->map(function($asignatura) {
+        'asignaturas' => $asignaturas->map(function ($asignatura) {
             return [
                 'id' => $asignatura->id,
                 'codigo_asignatura' => $asignatura->codigo_asignatura,
                 'nombre_asignatura' => $asignatura->nombre_asignatura,
+                'resultados_aprendizaje' => $asignatura->resultadosAprendizaje->map(function ($ra) {
+                    return [
+                        'id' => $ra->id,
+                        'descripcion' => $ra->descripcion,
+                    ];
+                })
             ];
         })
     ]);
     }
+
 
     public function importarCSV(Request $request) {
         $validator = Validator::make($request->all(), [

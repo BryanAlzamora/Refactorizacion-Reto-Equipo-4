@@ -66,4 +66,5 @@ class Ciclos extends Model {
     public function alumnos(): HasMany {
         return $this->hasMany(Alumnos::class, 'grupo', 'grupo');
     }
+
 }
