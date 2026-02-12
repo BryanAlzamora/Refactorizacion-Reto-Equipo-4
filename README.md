@@ -24,7 +24,8 @@ La aplicación se encuentra desplegada y accesible en el siguiente entorno:
 
 Estas credenciales permiten probar las distintas funcionalidades según el **rol asignado**, simulando el uso real de la plataforma en el contexto de la Formación Dual.
 
-Depencedias requeridas para la importacion de csv: composer require phpoffice/phpspreadsheet
+Dependencias requeridas para la importacion de csv: composer require phpoffice/phpspreadsheet
+
 ---
 
 ## 🖥️ Tecnologías utilizadas
