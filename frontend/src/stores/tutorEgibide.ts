@@ -139,51 +139,7 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     }
   }
 
-  // NUEVO: Asignar o actualizar instructor de una empresa
-  async function asignarInstructor(
-    empresaId: number,
-    instructorData: {
-      nombre: string;
-      apellidos: string;
-      telefono?: string;
-      ciudad?: string;
-    }
-  ) {
-    try {
-      const response = await fetch(
-        `${baseURL}/api/tutorEgibide/asignar-instructor`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            empresa_id: empresaId,
-            ...instructorData,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMessage(
-          data.message || "Error al asignar instructor",
-          "error"
-        );
-        return false;
-      }
-
-      setMessage(data.message || "Instructor asignado correctamente", "success");
-      return true;
-    } catch (err) {
-      console.error(err);
-      setMessage("Error de conexión al asignar instructor", "error");
-      return false;
-    }
-  }
+  
 
   //Traer grados con alumnos sin tutor asignado
   async function fetchAlumnosDeMiCursoSinTutorAsignado(tutorId: string) {
@@ -504,6 +460,22 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     }
   }
 
+  async function fetchHorarioAlumno(estanciaId: number) {
+  const response = await fetch(`${baseURL}/api/horario/${estanciaId}`, {
+    headers: {
+      Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+      Accept: "application/json",
+    }
+  });
+
+  const data = await response.json();
+  if (response.ok) return data;
+  setMessage("Error al obtener horario", "error");
+  return null;
+}
+
+
+
   return {
     alumnosAsignados,
     empresasAsignadas,
@@ -520,15 +492,12 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     fetchAlumnosAsignados,
     fetchEmpresasAsignadas,
     fetchTodasLasEmpresas,
-    asignarInstructor,
     tutor,
     actualizarEntregaAlumno,
-    fetchInicioTutor,
-    fetchAlumnosAsignados,
-    fetchEmpresasAsignadas,
     crearEntrega,
     guardarHorarioAlumno,
     guardarHorarioSemanal,
+    fetchHorarioAlumno,
     updateAlumnoEmpresa,
     setMessage,
     fetchAlumnosDeMiCursoSinTutorAsignado,
