@@ -15,6 +15,7 @@ use App\Models\EntregaCuaderno;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\TutorEmpresa;
 
 class TutorEgibideController extends Controller
 {
@@ -232,6 +233,7 @@ class TutorEgibideController extends Controller
             'telefono' => 'nullable|string|max:20',
             'ciudad' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:users,email',
+            'user_id' => 'nullable|exists:users,id'
         ]);
 
         try {
@@ -243,6 +245,16 @@ class TutorEgibideController extends Controller
             } else {
                 $nombreLimpio = strtolower(preg_replace('/[^a-zA-Z]/', '', $validated['nombre']));
                 $email = $nombreLimpio . '.instructor@demo.com';
+                // Crear nuevo instructor
+                $instructor = TutorEmpresa::create([
+                    'nombre' => $validated['nombre'],
+                    'apellidos' => $validated['apellidos'],
+                    'telefono' => $validated['telefono'] ?? null,
+                    'ciudad' => $validated['ciudad'] ?? null,
+                    'empresa_id' => $validated['empresa_id'],
+                    'user_id' => $validated['user_id'] || null, // Se puede asignar después si es necesario
+                ]);
+                $mensaje = 'Instructor creado correctamente';
             }
 
             $password = 'password'; // Contraseña por defecto

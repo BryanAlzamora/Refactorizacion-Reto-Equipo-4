@@ -194,51 +194,51 @@ onMounted(async () => {
           </div>
 
           <div class="row g-3 mt-2">
-            <div class="col-md-6" v-if="alumno.telefono">
+            <div class="col-md-6" >
               <div class="info-item">
                 <i class="bi bi-telephone-fill text-primary me-2"></i>
                 <span class="text-muted">Teléfono:</span>
-                <strong class="ms-2">{{ alumno.telefono }}</strong>
+                <strong class="ms-2">{{ alumno.telefono ?? "No disponible" }}</strong>
               </div>
             </div>
 
-            <div class="col-md-6" v-if="alumno.ciudad">
+            <div class="col-md-6" >
               <div class="info-item">
                 <i class="bi bi-geo-alt-fill text-primary me-2"></i>
                 <span class="text-muted">Ciudad:</span>
-                <strong class="ms-2">{{ alumno.ciudad }}</strong>
+                <strong class="ms-2">{{ alumno.ciudad ?? "No disponible" }}</strong>
               </div>
             </div>
 
-            <div class="col-md-6" v-if="estanciaActual?.empresa?.nombre">
+            <div class="col-md-6" >
               <div class="info-item">
                 <i class="bi bi-building text-primary me-2"></i>
                 <span class="text-muted">Empresa:</span>
-                <strong class="ms-2">{{ estanciaActual.empresa.nombre }}</strong>
+                <strong class="ms-2">{{ estanciaActual?.empresa?.nombre ?? "No disponible" }}</strong>
               </div>
             </div>
 
-            <div class="col-md-6" v-if="estanciaActual?.puesto">
+            <div class="col-md-6">
               <div class="info-item">
                 <i class="bi bi-briefcase-fill text-primary me-2"></i>
                 <span class="text-muted">Puesto:</span>
-                <strong class="ms-2">{{ estanciaActual.puesto }}</strong>
+                <strong class="ms-2">{{ estanciaActual?.puesto ?? "No disponible" }}</strong>
               </div>
             </div>
 
-            <div class="col-md-6" v-if="estanciaActual?.horas_totales != null">
+            <div class="col-md-6" >
               <div class="info-item">
                 <i class="bi bi-clock-fill text-primary me-2"></i>
                 <span class="text-muted">Horas totales:</span>
-                <strong class="ms-2">{{ estanciaActual.horas_totales }}h</strong>
+                <strong class="ms-2">{{ estanciaActual?.horas_totales ?? "No disponible" }}</strong>
               </div>
             </div>
 
-            <div class="col-md-6" v-if="estanciaActual?.fecha_inicio || estanciaActual?.fecha_fin">
+            <div class="col-md-6">
               <div class="info-item">
                 <i class="bi bi-calendar-range-fill text-primary me-2"></i>
                 <span class="text-muted">Periodo:</span>
-                <strong class="ms-2">
+                <strong class="ms-2" v-if="estanciaActual?.fecha_inicio && estanciaActual?.fecha_fin">
                   {{
                     estanciaActual?.fecha_inicio
                       ? formatDate(estanciaActual.fecha_inicio)
@@ -251,6 +251,7 @@ onMounted(async () => {
                       : "Por definir"
                   }}
                 </strong>
+                <strong v-else class="ms-2">No disponible</strong>
               </div>
             </div>
           </div>
