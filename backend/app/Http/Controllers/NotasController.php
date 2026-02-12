@@ -62,11 +62,9 @@ class NotasController extends Controller {
     }
 
     public function obtenerNotaCuadernoByAlumno($alumnoId) {
-        $estancia = Estancia::where('alumno_id', $alumnoId)->firstOrFail();
 
-        $notaCuaderno = NotaCuaderno::whereHas('cuadernoPracticas', function ($query) use ($estancia) {
-            $query->where('estancia_id', $estancia->id);
-        })->first();
+        $notaCuaderno = NotaCuaderno::where('alumno_id', $alumnoId)->first();
+ 
 
         return response()->json($notaCuaderno);
     }
@@ -77,18 +75,8 @@ class NotasController extends Controller {
             'nota' => ['required']
         ]);
 
-        $estancia = Estancia::where('alumno_id', $validated['alumno_id'])->firstOrFail();
-
-        $cuaderno = CuadernoPracticas::where('estancia_id', $estancia->id)->first();
-
-        if (!$cuaderno) {
-            return response()->json([
-                'message' => 'El alumno no ha subido su cuaderno de prácticas aún'
-            ], 422);
-        }
-
         NotaCuaderno::updateOrCreate(
-            ['cuaderno_practicas_id' => $cuaderno->id],
+            ['alumno_id' => $validated['alumno_id']],
             ['nota' => $validated['nota']]
         );
 
@@ -98,3 +86,4 @@ class NotasController extends Controller {
         ], 201);
     }
 }
+

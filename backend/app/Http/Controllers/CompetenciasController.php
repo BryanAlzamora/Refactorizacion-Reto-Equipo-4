@@ -41,7 +41,7 @@ class CompetenciasController extends Controller {
         $estancia = Estancia::where('alumno_id', $alumno_id)->firstOrFail();
 
         $competenciasTec = CompetenciaTec::whereHas('ciclo', function ($query) use ($estancia) {
-            $query->where('ciclo_id', $estancia->alumno->curso->ciclo_id);
+            $query->where('ciclo_id', $estancia->alumno->ciclo->id);
         })->get();
 
         return response()->json($competenciasTec);
@@ -68,9 +68,8 @@ class CompetenciasController extends Controller {
     public function getCompetenciasTransversalesByAlumno($alumno_id) {
         $estancia = Estancia::where('alumno_id', $alumno_id)->firstOrFail();
 
-        $familiaId = $estancia->alumno->curso->ciclo->familia_profesional_id;
 
-        $competenciasTrans = CompetenciaTransversal::where('familia_profesional_id', $familiaId)->get();
+        $competenciasTrans = CompetenciaTransversal::all();
 
         return response()->json($competenciasTrans);
     }

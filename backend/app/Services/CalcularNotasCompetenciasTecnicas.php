@@ -16,7 +16,7 @@ class CalcularNotasCompetenciasTecnicas {
       ->with('competenciaTec')
       ->get();
 
-    if ($notasCompetencias->isEmpty()) {
+    if (!$notasCompetencias) {
       return [];
     }
 
@@ -24,7 +24,7 @@ class CalcularNotasCompetenciasTecnicas {
 
     foreach ($notasCompetencias as $notaCompetencia) {
       // Unir competencia -> RA -> asignatura
-      $resultadosAprendizaje = DB::table('competencias_tec_ra as ctr')
+      $resultadosAprendizaje = DB::table('competencia_tec_ra as ctr')
         ->join('resultados_aprendizaje as ra', 'ctr.resultado_aprendizaje_id', '=', 'ra.id')
         ->join('asignaturas as a', 'ra.asignatura_id', '=', 'a.id')
         ->where('ctr.competencia_tec_id', $notaCompetencia->competencia_tec_id)

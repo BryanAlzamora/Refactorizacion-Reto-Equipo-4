@@ -5,6 +5,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useAuthStore } from "./auth";
 import type { EntregaCuaderno } from "@/interfaces/EntregaCuaderno";
+import type { TutorEgibide } from "@/interfaces/TutorEgibide";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -16,8 +17,8 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
   const entregas = ref<EntregaCuaderno[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
-
-  const inicio = ref(null);
+  const tutor = ref<TutorEgibide | null>(null);
+  const inicio = ref<null>(null);
   const loadingInicio = ref(false);
 
   const authStore = useAuthStore();
@@ -275,8 +276,8 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
         inicio.value = null;
         return false;
       }
-
       inicio.value = data;
+      tutor.value = data.tutor as TutorEgibide;
       return true;
     } finally {
       loadingInicio.value = false;
@@ -426,7 +427,6 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
       );
 
       const data = await response.json();
-      console.log(data);
       if (!response.ok) {
         setMessage(data.message || "Error al cargar entregas", "error");
         return false;
@@ -443,10 +443,71 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     }
   }
 
+  async function actualizarEntregaAlumno(
+    cuadernoId: number,
+    observaciones: string,
+    feedback: string,
+  ) {
+    try {
+      const response = await fetch(`${baseURL}/api/cuaderno/${cuadernoId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          observaciones,
+          feedback,
+        }),
+      });
+
+      if (!response.ok) {
+        setMessage("Error al actualizar entrega", "error");
+        return false;
+      }
+
+      setMessage("Entrega actualizada correctamente", "success");
+      return true;
+    } catch (err) {
+      setMessage("Error de conexión", "error");
+      return false;
+    }
+  }
+
+  async function crearEntrega(descripcion: string, fechaLimite: string) {
+    try {
+      const response = await fetch(`${baseURL}/api/entregas`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
+        },
+        body: JSON.stringify({
+          fecha_creacion: new Date().toISOString(),
+          fecha_limite: new Date(fechaLimite).toISOString(),
+          tutor_id: tutor.value?.id,
+          descripcion: descripcion,
+        }),
+      });
+
+      if (!response.ok) {
+        setMessage("Error al crear entrega", "error");
+        return false;
+      }
+
+      setMessage("Entrega creada", "success");
+      return true;
+    } catch (err) {
+      setMessage("Error al conectar", "error");
+      return false;
+    }
+  }
+
   return {
     alumnosAsignados,
     empresasAsignadas,
-    todasLasEmpresas, // NUEVO
+    todasLasEmpresas,
     misCursos,
     loading,
     error,
@@ -458,8 +519,14 @@ export const useTutorEgibideStore = defineStore("tutorEgibide", () => {
     fetchInicioTutor,
     fetchAlumnosAsignados,
     fetchEmpresasAsignadas,
-    fetchTodasLasEmpresas, // NUEVO
-    asignarInstructor, // NUEVO
+    fetchTodasLasEmpresas,
+    asignarInstructor,
+    tutor,
+    actualizarEntregaAlumno,
+    fetchInicioTutor,
+    fetchAlumnosAsignados,
+    fetchEmpresasAsignadas,
+    crearEntrega,
     guardarHorarioAlumno,
     guardarHorarioSemanal,
     updateAlumnoEmpresa,

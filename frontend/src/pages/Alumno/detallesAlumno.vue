@@ -82,7 +82,7 @@ const irAsignarHorasPeriodo = () => {
 
 const irSeguimiento = () => {
   router.push({
-    name: "tutor_egibide-seguimiento",
+    name: "tutor_egibide-seguimiento-general",
     params: { alumnoId: alumnoId },
   });
 };

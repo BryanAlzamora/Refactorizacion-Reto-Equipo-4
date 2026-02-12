@@ -9,7 +9,7 @@ onMounted(() => {
   alumnosStore.fetchAlumno()
 })
 
-const misDatos = computed(() => alumnosStore.alumno?.[0] ?? null)
+const misDatos = computed(() => alumnosStore.alumno ?? null)
 </script>
 
 <template>

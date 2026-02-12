@@ -14,6 +14,7 @@ use App\Http\Controllers\TutorEmpresaController;
 use App\Http\Controllers\SeguimientosController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AlumnoEntregaController;
 use App\Http\Controllers\EstanciaController;
 use App\Http\Controllers\CompetenciaRaController;
 use App\Http\Controllers\ImportacionController;
@@ -81,6 +82,8 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/entregas/mias', [EntregaController::class, 'mias']);
         Route::post('/entregas', [EntregaController::class, 'store']);
         Route::delete('/entregas/{id}', [EntregaController::class, 'destroy']);
+        Route::post('/alumno/{alumnoId}/entrega', [AlumnoEntregaController::class, 'storeEntrega']);
+        Route::put('/cuaderno/{idEntrega}/', [AlumnoEntregaController::class, 'actualizar']);
 
         // Tutor Egibide
         Route::get('/tutorEgibide/inicio', [TutorEgibideController::class, 'inicioTutor']);

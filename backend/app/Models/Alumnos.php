@@ -50,7 +50,7 @@ class Alumnos extends Model {
     }
 
     public function entregasCuaderno(): HasMany {
-        return $this->hasMany(CuadernoPracticas::class,'alumno_id','id');
+        return $this->hasMany(AlumnoEntrega::class,'alumno_id','id');
     }
 
     public function notaCuaderno(): HasOne {

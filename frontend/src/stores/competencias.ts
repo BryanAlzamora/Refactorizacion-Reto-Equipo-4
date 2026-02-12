@@ -325,7 +325,7 @@ export const useCompetenciasStore = defineStore("competencias", () => {
     );
 
     const data = await response.json();
-
+    console.log("Respuesta del backend para cálculo de notas técnicas:", data);
     if (!response.ok) {
       setMessage(
         data.message || "Error desconocido, inténtalo más tarde",

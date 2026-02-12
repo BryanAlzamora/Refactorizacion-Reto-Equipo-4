@@ -4,7 +4,6 @@ import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
 const user = authStore.currentUser;
-console.log(user);
 function logout() {
   authStore.logout();
 }

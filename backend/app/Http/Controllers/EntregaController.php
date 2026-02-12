@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Entrega;
+use App\Models\EntregaCuaderno;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -24,34 +26,21 @@ class EntregaController extends Controller
 
         $alumno = $user->alumno;
 
+
         if (!$alumno) {
             return response()->json(['message' => 'No existe alumno asociado a este usuario'], 404);
         }
 
-        $estancia = $alumno->estancias()
-            ->orderByRaw('fecha_fin IS NULL DESC')
-            ->orderByDesc('fecha_inicio')
-            ->first();
-
-        if (!$estancia) {
-            return response()->json(['message' => 'No tienes estancia asignada'], 404);
-        }
-
-        $cuaderno = $estancia->cuadernoPracticas;
-
-        if (!$cuaderno) {
-            return response()->json(['message' => 'No tienes cuaderno de prácticas todavía'], 404);
-        }
-
-        $entregas = $cuaderno->entregas()
-            ->orderByDesc('fecha')
-            ->orderByDesc('id')
-            ->get(['id', 'archivo', 'fecha']);
+        $entregas = EntregaCuaderno::where('tutor_id', $alumno->tutor_id)
+            ->with(['entregas' => function ($query) use ($alumno) {
+                $query->where('alumno_id', $alumno->id);
+            }])
+            ->get();
 
         return response()->json($entregas);
     }
 
-    public function archivo(Request $request, \App\Models\Entrega $entrega){
+    public function archivo(Request $request, EntregaCuaderno $entrega){
         $path = ltrim((string) $entrega->archivo, '/');
 
         if (!Storage::disk('public')->exists($path)) {
@@ -68,7 +57,7 @@ class EntregaController extends Controller
         $absolutePath = Storage::disk('public')->path($path);
 
         return response()->download($absolutePath, basename($path));
-    }   
+    }
 
     public function destroy($id){
         $entrega = DB::table('entregas')->where('id', $id)->first();
@@ -84,52 +73,39 @@ class EntregaController extends Controller
         return response()->json(['message' => 'Entrega eliminada correctamente']);
     }
 
-    public function store(Request $request){
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json(['message' => 'No autenticado'], 401);
-        }
-
-        if ($user->role !== 'alumno') {
-            return response()->json(['message' => 'No autorizado'], 403);
-        }
-
-        $request->validate([
-            'archivo' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'], // 10MB
+    public function store(Request $request)
+    {
+        // Validación
+        $validator = Validator::make($request->all(), [
+            'descripcion' => 'required|string|max:255',
+            'fecha_limite' => 'required|date',
+            'tutor_id' => 'required|integer|exists:users,id', // Asumiendo que tus tutores están en la tabla users
         ]);
 
-        $alumno = $user->alumno;
-
-        if (!$alumno) {
-            return response()->json(['message' => 'No existe alumno asociado a este usuario'], 404);
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Datos inválidos',
+                'messages' => $validator->errors()
+            ], 422);
         }
 
-        $estancia = $alumno->estancias()
-            ->orderByRaw('fecha_fin IS NULL DESC')
-            ->orderByDesc('fecha_inicio')
-            ->first();
+        try {
+            $entrega = EntregaCuaderno::create([
+                'descripcion' => $request->descripcion,
+                'fecha_creacion' => now(),
+                'fecha_limite' => $request->fecha_limite,
+                'tutor_id' => $request->tutor_id,
+            ]);
 
-        if (!$estancia) {
-            return response()->json(['message' => 'No tienes estancia asignada'], 404);
+            return response()->json([
+                'message' => 'Entrega creada correctamente',
+                'entrega' => $entrega
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al crear la entrega',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $cuaderno = $estancia->cuadernoPracticas;
-
-        if (!$cuaderno) {
-            return response()->json(['message' => 'No tienes cuaderno de prácticas todavía'], 404);
-        }
-
-        $file = $request->file('archivo');
-
-        $path = $file->store("entregas/cuaderno_{$cuaderno->id}", "public");
-
-        $entrega = Entrega::create([
-            'archivo' => $path,
-            'fecha' => now()->toDateString(),
-            'cuaderno_practicas_id' => $cuaderno->id,
-        ]);
-
-        return response()->json($entrega->only(['id', 'archivo', 'fecha']), 201);
     }
 }

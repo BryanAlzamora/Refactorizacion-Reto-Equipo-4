@@ -20,7 +20,7 @@ class NotaCuaderno extends Model {
   /**
    * Get the cuaderno practicas that owns this nota
    */
-  public function cuadernoPracticas(): BelongsTo {
-    return $this->belongsTo(CuadernoPracticas::class,'cuaderno_practicas_id','id');
+  public function alumno(): BelongsTo {
+    return $this->belongsTo(Alumnos::class);
   }
 }

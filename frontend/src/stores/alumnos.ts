@@ -4,12 +4,13 @@ import { useAuthStore } from "./auth";
 import { ref } from "vue";
 import type { Asignatura } from "@/interfaces/Asignatura";
 import type { NotaCuaderno, NotaEgibide } from "@/interfaces/Notas";
+import type { EntregaCuaderno } from "@/interfaces/EntregaCuaderno";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 export const useAlumnosStore = defineStore("alumnos", () => {
   const alumnos = ref<Alumno[]>([]);
-  const alumno = ref<Alumno[]>([]);
+  const alumno = ref<Alumno | null>(null);
   const asignaturas = ref<Asignatura[]>([]);
   const notaCuaderno = ref<number | null>(null);
   const notasEgibide = ref<NotaEgibide[]>([]);
@@ -25,7 +26,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
   const message = ref<string | null>(null);
   const messageType = ref<"success" | "error">("success");
 
-  const entregas = ref<any[]>([]);
+  const entregas = ref<EntregaCuaderno[]>([]);
   const loadingEntregas = ref(false);
 
   async function fetchMisEntregas() {
@@ -39,17 +40,18 @@ export const useAlumnosStore = defineStore("alumnos", () => {
       });
 
       if (!response.ok) throw new Error();
-      entregas.value = await response.json();
+      entregas.value = await response.json() as EntregaCuaderno[]; // Guardamos solo las entregas del alumno logueado
     } finally {
       loadingEntregas.value = false;
     }
   }
 
-  async function subirEntrega(file: File) {
+  async function subirEntrega(file: File, entregaId: number) {
     const fd = new FormData();
     fd.append("archivo", file);
-
-    const response = await fetch(`${baseURL}/api/entregas`, {
+    fd.append("entrega_id", entregaId.toString());
+    console.log(fd.get("archivo"), fd.get("entrega_id"));
+    const response = await fetch(`${baseURL}/api/alumno/${alumno.value?.id}/entrega`, {
       method: "POST",
       headers: {
         Authorization: authStore.token ? `Bearer ${authStore.token}` : "",
@@ -160,9 +162,7 @@ export const useAlumnosStore = defineStore("alumnos", () => {
       return false;
     }
 
-    alumno.value = Array.isArray(data)
-      ? (data as Alumno[])
-      : ([data] as Alumno[]);
+    alumno.value = data as Alumno;
   }
 
   async function fetchInicio() {
