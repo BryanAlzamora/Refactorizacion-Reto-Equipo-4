@@ -14,8 +14,6 @@ const tutorEgibideStore = useTutorEgibideStore();
 const tutorEmpresaStore = useTutorEmpresaStore();
 const empresaStore = useEmpresasStore();
 
-
-
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
@@ -30,16 +28,28 @@ const store = computed(() =>
 );
 
 let alumno = ref<Alumno | null>(null);
+const horarioSemanal = ref<any[]>([]);
 
 onMounted(async () => {
   try {
     isLoading.value = true;
 
-      await store.value.fetchAlumnosAsignados(tutorId);
+    await store.value.fetchAlumnosAsignados(tutorId);
     
     alumno.value = store.value.alumnosAsignados.find(a => a.id === alumnoId) || null;
+    
     if (!alumno.value) {
       error.value = "Alumno no encontrado";
+      return;
+    }
+
+    // ✅ Cargar horario si tiene estancia
+    const estanciaId = alumno.value.estancias?.[0]?.id;
+    if (estanciaId) {
+      const horarioData = await tutorEgibideStore.fetchHorarioAlumno(estanciaId);
+      if (horarioData) {
+        horarioSemanal.value = horarioData;
+      }
     }
 
   } catch (err) {
@@ -49,7 +59,6 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
-
 
 const irACompetencias = () => {
   router.push({
@@ -113,6 +122,60 @@ const formatDate = (dateString: string) => {
     day: "numeric",
   });
 };
+
+// ✅ Formatear horario en texto compacto
+const resumenHorario = computed(() => {
+  if (!horarioSemanal.value || horarioSemanal.value.length === 0) {
+    return "Sin asignar";
+  }
+
+  // Agrupar días con mismo horario
+  const grupos: Record<string, string[]> = {};
+
+  horarioSemanal.value.forEach((dia: any) => {
+    const tramo = dia.horarios_tramo?.[0];
+    if (!tramo) return;
+
+    const inicio = tramo.hora_inicio?.substring(0, 5); // "08:15:00" -> "08:15"
+    const fin = tramo.hora_fin?.substring(0, 5);
+    const pausa = dia.pausa_minutos || 0;
+
+    const clave = `${inicio}-${fin}-${pausa}`;
+
+    if (!grupos[clave]) grupos[clave] = [];
+    grupos[clave].push(dia.dia_semana);
+  });
+
+  // Convertir grupos a formato compacto
+  const partes = Object.entries(grupos).map(([clave, dias]) => {
+    const [inicio, fin, pausa] = clave.split("-");
+
+    // Convertir días a letras
+    const letras = dias
+      .map((d) =>
+        d === "Lunes"
+          ? "L"
+          : d === "Martes"
+          ? "M"
+          : d === "Miercoles"
+          ? "X"
+          : d === "Jueves"
+          ? "J"
+          : "V",
+      )
+      .join("");
+
+    let texto = `${letras} → ${inicio} a ${fin}`;
+
+    if (Number(pausa) > 0) {
+      texto += ` (${pausa} min pausa)`;
+    }
+
+    return texto;
+  });
+
+  return partes.join(" · ");
+});
 </script>
 
 <template>
@@ -180,60 +243,68 @@ const formatDate = (dateString: string) => {
 
           <!-- Información adicional -->
           <div class="row g-3 mt-2">
-  <div class="col-md-6">
-    <div class="info-item">
-      <i class="bi bi-telephone-fill text-primary me-2"></i>
-      <span class="text-muted">Teléfono:</span>
-      <strong class="ms-2">{{ alumno.telefono ?? "--" }}</strong>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="info-item">
-      <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-      <span class="text-muted">Ciudad:</span>
-      <strong class="ms-2">{{ alumno.ciudad ?? "--" }}</strong>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="info-item">
-      <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-      <span class="text-muted">Empresa:</span>
-      <strong class="ms-2">
-        {{ alumno.estancias?.[0]?.empresa?.nombre ?? 'Sin asignar' }}
-      </strong>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="info-item">
-      <i class="bi bi-briefcase-fill text-primary me-2"></i>
-      <span class="text-muted">Puesto:</span>
-      <strong class="ms-2">{{ alumno.estancias?.[0]?.puesto ?? 'Sin asignar' }}</strong>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="info-item">
-      <i class="bi bi-clock-fill text-primary me-2"></i>
-      <span class="text-muted">Horas totales:</span>
-      <strong class="ms-2">
-        {{ alumno.estancias?.[0]?.horas_totales ? alumno.estancias?.[0]?.horas_totales + 'h' : 'Sin asignar' }}
-      </strong>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="info-item">
-      <i class="bi bi-calendar-range-fill text-primary me-2"></i>
-      <span class="text-muted">Periodo:</span>
-      <strong class="ms-2" v-if="alumno.estancias?.[0]?.fecha_inicio && alumno.estancias?.[0]?.fecha_fin">
-        {{  formatDate(alumno.estancias?.[0]?.fecha_inicio) }} -
-        {{ formatDate(alumno.estancias?.[0]?.fecha_fin) }}
-      </strong>
-      <strong class="ms-2" v-else>
-        Por definir
-      </strong>
-    </div>
-  </div>
-</div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <i class="bi bi-telephone-fill text-primary me-2"></i>
+                <span class="text-muted">Teléfono:</span>
+                <strong class="ms-2">{{ alumno.telefono ?? "--" }}</strong>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                <span class="text-muted">Ciudad:</span>
+                <strong class="ms-2">{{ alumno.ciudad ?? "--" }}</strong>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <i class="bi bi-building-fill text-primary me-2"></i>
+                <span class="text-muted">Empresa:</span>
+                <strong class="ms-2">
+                  {{ alumno.estancias?.[0]?.empresa?.nombre ?? 'Sin asignar' }}
+                </strong>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <i class="bi bi-briefcase-fill text-primary me-2"></i>
+                <span class="text-muted">Puesto:</span>
+                <strong class="ms-2">{{ alumno.estancias?.[0]?.puesto ?? 'Sin asignar' }}</strong>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <i class="bi bi-clock-fill text-primary me-2"></i>
+                <span class="text-muted">Horas totales:</span>
+                <strong class="ms-2">
+                  {{ alumno.estancias?.[0]?.horas_totales ? alumno.estancias?.[0]?.horas_totales + 'h' : 'Sin asignar' }}
+                </strong>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <i class="bi bi-calendar-range-fill text-primary me-2"></i>
+                <span class="text-muted">Periodo:</span>
+                <strong class="ms-2" v-if="alumno.estancias?.[0]?.fecha_inicio && alumno.estancias?.[0]?.fecha_fin">
+                  {{ formatDate(alumno.estancias?.[0]?.fecha_inicio) }} -
+                  {{ formatDate(alumno.estancias?.[0]?.fecha_fin) }}
+                </strong>
+                <strong class="ms-2" v-else>
+                  Por definir
+                </strong>
+              </div>
+            </div>
 
+            <!-- ✅ HORARIO SEMANAL -->
+            <div class="col-12">
+              <div class="info-item">
+                <i class="bi bi-clock-history text-primary me-2"></i>
+                <span class="text-muted">Horario semanal:</span>
+                <strong class="ms-2">{{ resumenHorario }}</strong>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -353,9 +424,7 @@ const formatDate = (dateString: string) => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg,
-      #81045f 0%,
-      #4a90e2 100%);
+  background: linear-gradient(135deg, #81045f 0%, #4a90e2 100%);
   display: flex;
   align-items: center;
   justify-content: center;

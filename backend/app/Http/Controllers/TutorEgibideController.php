@@ -8,9 +8,13 @@ use App\Models\Curso;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Models\TutorEgibide;
+use App\Models\TutorEmpresa;
 use App\Models\Estancia;
 use App\Models\Empresas;
 use App\Models\EntregaCuaderno;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use App\Models\TutorEmpresa;
 
 class TutorEgibideController extends Controller
@@ -46,17 +50,8 @@ class TutorEgibideController extends Controller
         $userId = $request->user()->id;
         $tutor = TutorEgibide::where('user_id', $userId)->firstOrFail();
 
-        $empresa = Empresas::with([
-            'instructores' => function ($query) use ($tutor) {
-                $query->whereHas('estancias.alumno', function ($q) use ($tutor) {
-                    $q->where('tutor_id', $tutor->id);
-                });
-            }
-        ])
+        $empresa = Empresas::with(['instructores'])
             ->where('id', $empresaId)
-            ->whereHas('estancias.alumno', function ($query) use ($tutor) {
-                $query->where('tutor_id', $tutor->id);
-            })
             ->firstOrFail();
 
         return response()->json($empresa);
@@ -228,7 +223,7 @@ class TutorEgibideController extends Controller
         return response()->json($empresas);
     }
 
-    // Método para asignar/actualizar instructor en una empresa
+    // Método para crear un nuevo instructor en una empresa
     public function asignarInstructor(Request $request)
     {
         $validated = $request->validate([
@@ -237,23 +232,19 @@ class TutorEgibideController extends Controller
             'apellidos' => 'required|string|max:255',
             'telefono' => 'nullable|string|max:20',
             'ciudad' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email',
             'user_id' => 'nullable|exists:users,id'
         ]);
 
         try {
-            // Verificar si ya existe un instructor para esta empresa
-            $instructor = TutorEmpresa::where('empresa_id', $validated['empresa_id'])->first();
+            DB::beginTransaction();
 
-            if ($instructor) {
-                // Actualizar instructor existente
-                $instructor->update([
-                    'nombre' => $validated['nombre'],
-                    'apellidos' => $validated['apellidos'],
-                    'telefono' => $validated['telefono'] ?? null,
-                    'ciudad' => $validated['ciudad'] ?? null,
-                ]);
-                $mensaje = 'Instructor actualizado correctamente';
+            // Usar el email proporcionado o generar uno automáticamente
+            if (!empty($validated['email'])) {
+                $email = $validated['email'];
             } else {
+                $nombreLimpio = strtolower(preg_replace('/[^a-zA-Z]/', '', $validated['nombre']));
+                $email = $nombreLimpio . '.instructor@demo.com';
                 // Crear nuevo instructor
                 $instructor = TutorEmpresa::create([
                     'nombre' => $validated['nombre'],
@@ -266,16 +257,52 @@ class TutorEgibideController extends Controller
                 $mensaje = 'Instructor creado correctamente';
             }
 
+            $password = 'password'; // Contraseña por defecto
+
+            // Crear usuario
+            $user = User::create([
+                'email' => $email,
+                'password' => Hash::make($password),
+                'role' => 'tutor_empresa',
+            ]);
+
+            // Crear nuevo instructor
+            $instructor = TutorEmpresa::create([
+                'nombre' => $validated['nombre'],
+                'apellidos' => $validated['apellidos'],
+                'telefono' => $validated['telefono'] ?? null,
+                'ciudad' => $validated['ciudad'] ?? null,
+                'empresa_id' => $validated['empresa_id'],
+                'user_id' => $user->id,
+            ]);
+
+            DB::commit();
+
             return response()->json([
                 'success' => true,
-                'message' => $mensaje,
-                'instructor' => $instructor
+                'message' => 'Instructor creado correctamente',
+                'instructor' => $instructor,
+                'credenciales' => [
+                    'email' => $email,
+                    'password' => $password
+                ]
             ], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error al asignar instructor: ' . $e->getMessage(),
+                'message' => 'Error al crear instructor: ' . $e->getMessage(),
             ], 500);
         }
+    }
+    
+
+
+
+    // Obtener todos los instructores
+    public function obtenerTodosInstructores(Request $request)
+    {
+        $instructores = TutorEmpresa::all();
+        return response()->json($instructores);
     }
 }

@@ -2,7 +2,7 @@
 import Toast from "@/components/Notification/Toast.vue";
 import type { Alumno } from "@/interfaces/Alumno";
 import { useTutorEgibideStore } from "@/stores/tutorEgibide";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
@@ -18,24 +18,24 @@ const isLoading = ref(true);
 const calendarioInicio = ref("");
 const calendarioFin = ref("");
 
-/* ✅ Horas totales reales que mete el tutor */
-const horasTotales = ref<number>(420);
-
-/* Total calculado */
-const horasTotalesPeriodo = ref<number>(0);
-
 const alumnoId = Number(route.params.alumnoId);
 
-/* ✅ SOLO LABORABLES */
+/* DIAS LABORABLES */
 const diasSemana = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"];
 
-/* ✅ Horario editable independiente */
+/* HORARIO */
 const horarios = ref(
   diasSemana.map((dia) => ({
     dia_semana: dia,
-    tramos: [{ hora_inicio: "08:00", hora_fin: "15:00" }],
+    tramos: [{ hora_inicio: "", hora_fin: "" }],
+    pausa_minutos: 0,
   }))
 );
+
+/* HORARIO BASE (L-J) */
+const baseInicio = ref("08:15");
+const baseFin = ref("17:00");
+const basePausa = ref(30);
 
 /* ---------------------------------------- */
 /* FUNCIONES */
@@ -47,17 +47,9 @@ function timeToMinutes(time: string) {
   return h * 60 + m;
 }
 
-function minutesToTime(mins: number) {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-/* Horas de un día */
+/* Horas efectivas por día */
 function calcularHorasDia(index: number) {
   const dia = horarios.value[index];
-  if (!dia) return 0;
-
   const tramo = dia.tramos[0];
 
   const inicio = timeToMinutes(tramo.hora_inicio);
@@ -65,69 +57,65 @@ function calcularHorasDia(index: number) {
 
   if (fin <= inicio) return 0;
 
-  return (fin - inicio) / 60;
+  const total = fin - inicio;
+  const efectivo = total - (dia.pausa_minutos || 0);
+
+  return efectivo / 60;
 }
 
-/* Contar días laborables entre fechas */
-function contarDiasLaborables() {
+/* ---------------------------------------- */
+/*HORAS SEMANALES */
+/* ---------------------------------------- */
+
+const horasSemanales = computed(() => {
+  let total = 0;
+  for (let i = 0; i < 5; i++) {
+    total += calcularHorasDia(i);
+  }
+  return total;
+});
+
+/* ---------------------------------------- */
+/* SEMANAS ENTRE FECHAS */
+/* ---------------------------------------- */
+
+function calcularSemanasEntreFechas() {
   if (!calendarioInicio.value || !calendarioFin.value) return 0;
 
   const start = new Date(calendarioInicio.value);
   const end = new Date(calendarioFin.value);
 
-  let dias = 0;
-  const temp = new Date(start);
+  if (end < start) return 0;
 
-  while (temp <= end) {
-    const day = temp.getDay();
+  const diffMs = end.getTime() - start.getTime();
+  const diffDias = diffMs / (1000 * 60 * 60 * 24);
 
-    if (day >= 1 && day <= 5) dias++; // lunes-viernes
-
-    temp.setDate(temp.getDate() + 1);
-  }
-
-  return dias;
-}
-
-/* ✅ Repartir horas automáticamente */
-function repartirHoras() {
-  const diasLaborables = contarDiasLaborables();
-  if (diasLaborables === 0) return;
-
-  const horasPorDia = horasTotales.value / diasLaborables;
-  const minutosPorDia = Math.round(horasPorDia * 60);
-
-  horarios.value.forEach((dia) => {
-    dia.tramos[0].hora_inicio = "08:00";
-    dia.tramos[0].hora_fin = minutesToTime(480 + minutosPorDia);
-  });
-
-  horasTotalesPeriodo.value = Math.round(horasTotales.value);
-}
-
-/* ✅ Si modificas manualmente un día → recalcula total real */
-function recalcularTotalDesdeHorario() {
-  const diasLaborables = contarDiasLaborables();
-  if (diasLaborables === 0) return;
-
-  let total = 0;
-
-  for (let i = 0; i < 5; i++) {
-    total += calcularHorasDia(i);
-  }
-
-  horasTotalesPeriodo.value = Math.round(total * (diasLaborables / 5));
+  return diffDias / 7;
 }
 
 /* ---------------------------------------- */
-/* WATCHERS */
+/* HORAS TOTALES CORRECTAS */
 /* ---------------------------------------- */
 
-/* Si cambias horas totales o fechas → repartir */
-watch([horasTotales, calendarioInicio, calendarioFin], repartirHoras);
+const horasTotales = computed(() => {
+  const semanas = calcularSemanasEntreFechas();
+  return Math.round(semanas * horasSemanales.value);
+});
 
-/* Si cambias un día manualmente → recalcular */
-watch(horarios, recalcularTotalDesdeHorario, { deep: true });
+/* ---------------------------------------- */
+/* APLICAR HORARIO BASE A L-J */
+/* ---------------------------------------- */
+
+function aplicarHorarioBase() {
+  for (let i = 0; i < 4; i++) {
+    horarios.value[i].tramos[0].hora_inicio = baseInicio.value;
+    horarios.value[i].tramos[0].hora_fin = baseFin.value;
+    horarios.value[i].pausa_minutos = basePausa.value;
+  }
+}
+
+/* Watch para que se actualicen L-J */
+watch([baseInicio, baseFin, basePausa], aplicarHorarioBase);
 
 /* ---------------------------------------- */
 /* MOUNT */
@@ -139,6 +127,14 @@ onMounted(() => {
       (a) => Number(a.id) === alumnoId
     ) || null;
 
+  /* Valores iniciales */
+  aplicarHorarioBase();
+
+  /* Viernes */
+  horarios.value[4].tramos[0].hora_inicio = "08:00";
+  horarios.value[4].tramos[0].hora_fin = "15:00";
+  horarios.value[4].pausa_minutos = 0;
+
   isLoading.value = false;
 });
 
@@ -147,21 +143,16 @@ onMounted(() => {
 /* ---------------------------------------- */
 
 const guardarHorario = async () => {
-  if (!alumno.value?.estancias?.[0]?.id) {
-    alert("Este alumno no tiene estancia asignada");
-    return;
-  }
+  if (!alumno.value?.estancias?.[0]?.id) return;
 
   const estanciaId = alumno.value.estancias[0].id;
 
-  const ok = await tutorEgibideStore.guardarHorarioAlumno(
+  await tutorEgibideStore.guardarHorarioAlumno(
     alumnoId,
     calendarioInicio.value,
     calendarioFin.value,
-    horasTotalesPeriodo.value
+    horasTotales.value
   );
-
-  if (!ok) return;
 
   await tutorEgibideStore.guardarHorarioSemanal(estanciaId, horarios.value);
 
@@ -171,7 +162,6 @@ const guardarHorario = async () => {
   setTimeout(() => router.back(), 1200);
 };
 
-/* Volver */
 const volver = () => router.back();
 </script>
 
@@ -180,11 +170,7 @@ const volver = () => router.back();
 
   <div class="container mt-4">
     <div v-if="isLoading" class="text-center py-5">
-      <div class="spinner-border" style="color: #81045f;" role="status"></div>
-    </div>
-
-    <div v-else-if="!alumno" class="alert alert-danger">
-      Alumno no encontrado
+      <div class="spinner-border"></div>
     </div>
 
     <div v-else>
@@ -194,10 +180,6 @@ const volver = () => router.back();
         </div>
 
         <div class="card-body">
-          <p>
-            Introduce el horario del alumno <b>{{ alumno.nombre }}</b>
-          </p>
-
           <!-- Fechas -->
           <div class="row">
             <div class="col-md-6 mb-3">
@@ -211,35 +193,48 @@ const volver = () => router.back();
             </div>
           </div>
 
-          <!-- Horas totales -->
-          <div class="mb-3">
-            <label>Horas totales reales *</label>
-            <input
-              type="number"
-              min="1"
-              class="form-control"
-              v-model="horasTotales"
-            />
-          </div>
-
           <hr />
 
-          <!-- Horario -->
-          <h5>Horario semanal (Lunes a Viernes)</h5>
+          <!-- HORARIO BASE -->
+          <h5>Horario base (Lunes a Jueves)</h5>
+
+          <div class="row g-2 mb-4">
+            <div class="col-md-3">
+              <label>Inicio</label>
+              <input type="time" class="form-control" v-model="baseInicio" />
+            </div>
+
+            <div class="col-md-3">
+              <label>Fin</label>
+              <input type="time" class="form-control" v-model="baseFin" />
+            </div>
+
+            <div class="col-md-3">
+              <label>Pausa</label>
+              <input type="number" class="form-control" v-model.number="basePausa" />
+            </div>
+          </div>
+
+          <!-- Horario semanal editable -->
+          <h5>Horario semanal completo</h5>
 
           <div v-for="(h, i) in horarios" :key="i" class="mb-3">
             <label class="fw-bold">{{ h.dia_semana }}</label>
 
-            <div class="row mt-2">
-              <div class="col-md-5">
+            <div class="row g-2">
+              <div class="col-md-3">
                 <input type="time" class="form-control" v-model="h.tramos[0].hora_inicio" />
               </div>
 
-              <div class="col-md-5">
+              <div class="col-md-3">
                 <input type="time" class="form-control" v-model="h.tramos[0].hora_fin" />
               </div>
 
-              <div class="col-md-2 d-flex align-items-center">
+              <div class="col-md-3">
+                <input type="number" class="form-control" v-model.number="h.pausa_minutos" />
+              </div>
+
+              <div class="col-md-3 text-center">
                 <span class="badge bg-secondary">
                   {{ calcularHorasDia(i).toFixed(2) }}h
                 </span>
@@ -249,16 +244,17 @@ const volver = () => router.back();
 
           <hr />
 
+          <!-- Totales -->
           <div class="alert alert-info">
-            <strong>Horas totales del periodo:</strong>
-            {{ horasTotalesPeriodo }} horas
+            <strong>Horas semanales:</strong> {{ horasSemanales.toFixed(2) }}h<br />
+            <strong>Horas totales del periodo:</strong> {{ horasTotales }}h
           </div>
 
+          <!-- Botones -->
           <div class="d-flex justify-content-end gap-2">
             <button class="btn btn-outline-secondary" @click="volver">
               Cancelar
             </button>
-
             <button class="btn btn-primary" @click="guardarHorario">
               Guardar
             </button>

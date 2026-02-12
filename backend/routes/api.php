@@ -7,6 +7,7 @@ use App\Http\Controllers\CiclosController;
 use App\Http\Controllers\CompetenciasController;
 use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\AlumnosController;
+use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\FamiliaProfesionalController;
 use App\Http\Controllers\NotasController;
 use App\Http\Controllers\TutorEgibideController;
@@ -193,6 +194,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('can:gestionar-horarios')->group(function () {
         Route::post('/horario/asignar', [HorarioController::class, 'asignarHorario']);
         Route::get('/horario/{idEstancia}', [HorarioController::class, 'getHorario']);
+
+        // Instructores
+        Route::get('/instructores', [InstructorController::class, 'index']);
+        Route::post('/instructores', [InstructorController::class, 'store']);
+        Route::get('/instructores/{id}', [InstructorController::class, 'show']);
+        Route::put('/instructores/{id}', [InstructorController::class, 'update']);
+        Route::delete('/instructores/{id}', [InstructorController::class, 'destroy']);
+       
+    }
     });
 
     // ========================================

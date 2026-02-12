@@ -330,6 +330,25 @@ const router = createRouter({
           },
           meta: { role: "admin" },
         },
+        {
+          path: "tutor_egibide/instructores",
+          name: "tutor_egibide-instructores",
+          components: {
+            main: () => import("@/pages/Instructor/instructores.vue"),
+          },
+          meta: { role: "tutor_egibide" },
+        },
+        {
+          path: "tutor_egibide/instructores/:id",
+          name: "tutor_egibide-instructordetalle",
+          components: {
+            main: () => import("@/pages/Instructor/instructorDetalle.vue"),
+          },
+          meta: { role: "tutor_egibide" },
+        }
+
+        
+
 
       ],
     },
